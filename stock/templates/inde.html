@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Sentiment Gauge</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <h1>Sentiment Gauge</h1>
+
+  <!-- Form: send stock symbol to Flask -->
+  <form method="POST" id="sentimentForm">
+    <input type="text" id="stockSymbol" name="stock_symbol" placeholder="Enter stock symbol (e.g., AAPL)" required>
+    <button type="submit">Analyze</button>
+  </form>
+
+  <!-- Gauge -->
+  <div class="gauge-wrap">
+    <svg id="gauge" viewBox="0 0 200 120" class="gauge">
+      <!-- Background track (thin grey) -->
+      <path id="track" fill="none" stroke="#e5e7eb" stroke-width="12"/>
+
+      <!-- Colored segments -->
+      <path id="seg-neg" fill="none" stroke="#ef4444" stroke-width="14" stroke-linecap="round"/>
+      <path id="seg-neu" fill="none" stroke="#f59e0b" stroke-width="14" stroke-linecap="round"/>
+      <path id="seg-pos" fill="none" stroke="#22c55e" stroke-width="14" stroke-linecap="round"/>
+
+      <!-- Needle -->
+      <line id="needle" x1="100" y1="100" x2="100" y2="20" />
+
+      <!-- Center cap -->
+      <circle cx="100" cy="100" r="6" fill="#111827"/>
+    </svg>
+
+    <div id="scoreDisplay" class="score">Score: —</div>
+    <div class="legend">
+      <span class="dot neg"></span> Negative
+      <span class="dot neu"></span> Neutral (−10 … +10)
+      <span class="dot pos"></span> Positive
+    </div>
+  </div>
+  <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>

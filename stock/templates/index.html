@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Stock Sentiment Analyzer</title>
+</head>
+<body>
+    <h2>Enter a stock symbol:</h2>
+    <form method="POST" id="sentimentForm">
+        <input type="text" name="stock_symbol" id="stockSymbol" required>
+        <button type="submit">Analyze</button>
+    </form>
+    
+    <div id="result"></div>
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+        const form = document.getElementById("sentimentForm");
+        const resultDiv = document.getElementById("result");
+
+        form.addEventListener("submit", async (event) => {
+            event.preventDefault(); // stop page from reloading
+
+            const stockSymbol = document.getElementById("stockSymbol").value;
+
+            try {
+            const response = await fetch("/analyze", {
+                method: "POST",
+                headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                body: new URLSearchParams({ stock_symbol: stockSymbol })
+            });
+
+            const data = await response.json();
+
+            if (data.error) {
+                resultDiv.innerHTML = "⚠️ Error:<br>" + data.error;
+            } else {
+                resultDiv.innerHTML = `Stock: ${data.stock_symbol}<br>Sentiment Score: ${data.sentiment}`;
+            }
+            } catch (error) {
+            resultDiv.innerHTML = "❌ Something went wrong:<br>" + error;
+            }
+        });
+        });
+    </script>
+</body>
+</html>
