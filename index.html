@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>React Quick Start</title>
+    <!-- React + ReactDOM via CDN -->
+    <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+    <!-- Babel lets us use JSX directly in the browser -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  </head>
+  <body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+      // A simple React component
+      function App() {
+        const [count, setCount] = React.useState(0);
+
+        return (
+          <div>
+            <h1>Hello React!</h1>
+            <p>You clicked {count} times</p>
+            <button onClick={() => setCount(count + 1)}>Click me {count}</button>
+          </div>
+        );
+      }
+
+      // Render to the page
+      const root = ReactDOM.createRoot(document.getElementById("root"));
+      root.render(<App />);
+    </script>
+  </body>
+</html>

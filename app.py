@@ -1,5 +1,5 @@
 from flask import Flask, render_template, request, jsonify
-from algoForFlask import get_stock_sentiment
+from main import get_stock_sentiment
 
 app = Flask(__name__)
 
@@ -15,7 +15,7 @@ def analyze():
     
     sentiment = get_stock_sentiment(stock_symbol)
     return jsonify({
-        "stock_symbol": stock_symbol.upper(),
+        "stock_symbol": stock_symbol,
         "sentiment": sentiment
     })
 
