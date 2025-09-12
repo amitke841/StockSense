@@ -5,6 +5,10 @@ from stockSentiment import get_stock_sentiment
 app = Flask(__name__)
 CORS(app)
 
+@app.route("/health")
+def health():
+    return jsonify({"status": "ok"})
+
 @app.route("/analyze", methods=["POST"])
 def analyze():
     stock_symbol = request.form.get("stock_symbol", "")
