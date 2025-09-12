@@ -1,6 +1,6 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
-from backend.stockSentiment import get_stock_sentiment
+from stockSentiment import get_stock_sentiment
 
 app = Flask(__name__)
 CORS(app)
