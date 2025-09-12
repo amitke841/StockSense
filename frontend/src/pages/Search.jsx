@@ -16,6 +16,8 @@ export default function SearchPage() {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [analysisResult, setAnalysisResult] = useState(null); // Renamed for clarity
   const [error, setError] = useState(null);
+  const [scoreResult, setScoreResult] = useState(null);
+
 
   const analyzeStock = async () => {
     if (!searchQuery.trim()) return;
@@ -23,9 +25,24 @@ export default function SearchPage() {
     setIsAnalyzing(true);
     setAnalysisResult(null); // Clear previous results
     setError(null);
+    setScoreResult(null);
+    
+      try {
+        const scorepy = await fetch("https://stocksense-3oql.onrender.com/analyze", {
+          method: "POST",
+          body: new URLSearchParams({ stock_symbol: searchQuery }),
+        });
+
+        if (!scorepy.ok) throw new Error("Server error");
+
+        const data = await scorepy.json();
+        setScoreResult(data);
+        } catch (err) {
+        setError("Failed to analyze stock sentiment.");
+    }
     
     try {
-      const result = await InvokeLLM({
+      let result = await InvokeLLM({
         prompt: `Analyze the stock "${searchQuery}" and provide comprehensive investment analysis. Include:
         1. Current stock price and recent performance
         2. Social media sentiment from Reddit, Twitter, and other platforms
@@ -43,12 +60,10 @@ export default function SearchPage() {
         response_json_schema: {
           type: "object",
           properties: {
-            symbol: { type: "string" },
             company_name: { type: "string" },
             current_price: { type: "number" },
             price_change: { type: "number" },
             price_change_percent: { type: "number" },
-            recommendation_score: { type: "integer" },
             analysis_summary: { type: "string" },
             social_sentiment: {
               type: "object",
@@ -73,7 +88,12 @@ export default function SearchPage() {
         }
       });
 
-      setAnalysisResult(result); // Set the single result
+      result.symbol = scoreResult.stock_symbol;
+      result.recommendation_score = scoreResult.sentiment;
+
+      setAnalysisResult(result);
+      
+       // Set the single result
       
       // Save to database
       await Stock.create({
