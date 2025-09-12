@@ -1,14 +1,21 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
+from backend.stockSentiment import get_stock_sentiment
 
 app = Flask(__name__)
-CORS(app)  # allow frontend (React) to call this backend
+CORS(app)
 
-@app.route("/uppercase", methods=["POST"])
-def uppercase():
-    data = request.get_json()
-    user_input = data.get("text", "")
-    return jsonify({"result": user_input.upper()})
+@app.route("/analyze", methods=["POST"])
+def analyze():
+    stock_symbol = request.form.get("stock_symbol", "")
+    if not stock_symbol:
+        return jsonify({"error": "No stock symbol provided."})
+    
+    sentiment = get_stock_sentiment(stock_symbol)
+    return jsonify({
+        "stock_symbol": stock_symbol,
+        "sentiment": sentiment
+    })
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000)

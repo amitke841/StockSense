@@ -1,4 +1,4 @@
-from main import get_stock_sentiment
+from backend.stockSentiment import get_stock_sentiment
 import sys
 from colorama import Fore, Back, Style, init
 
