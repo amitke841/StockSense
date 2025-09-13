@@ -51,17 +51,27 @@ export default function StockAnalysisCard({ analysisData }) {
   };
 
   const getScoreColor = (score) => {
-    if (score > 60) return 'text-green-600';
-    if (score > 20) return 'text-yellow-600';
-    if (score > -20) return 'text-gray-600';
-    return 'text-red-600';
+    if (score > 60) return 'text-green-900';
+    if (score > 20) return 'text-green-600';
+    if (score > -20) return 'text-yellow-600';
+    if (score > -60) return 'bg-red-600';
+    return 'text-red-900';
+  };
+
+  const getCircleColor = (score) => {
+    if (score > 60) return '#14532d';
+    if (score > 20) return '#16a34a';
+    if (score > -20) return '#ca8a04';
+    if (score > -60) return '#dc2626';
+    return '#7f1d1d';
   };
 
   const getScoreBg = (score) => {
-    if (score > 60) return 'bg-green-500';
-    if (score > 20) return 'bg-yellow-500';
-    if (score > -20) return 'bg-gray-500';
-    return 'bg-red-500';
+    if (score > 60) return 'bg-green-900';
+    if (score > 20) return 'bg-green-400';
+    if (score > -20) return 'bg-yellow-500';
+    if (score > -60) return 'bg-red-400';
+    return 'bg-red-900';
   };
 
   const getRecommendationText = (score) => {
@@ -109,26 +119,30 @@ export default function StockAnalysisCard({ analysisData }) {
             </div>
             
             {/* AI Score Display */}
-            <div className="text-center">
-              <div className="relative">
-                <div className={`w-24 h-24 rounded-full border-8 ${getScoreBg(analysisData.recommendation_score).replace('bg-', 'border-')} flex items-center justify-center`}>
-                  <div className={`text-2xl font-bold ${getScoreColor(analysisData.recommendation_score)}`}>
-                    {analysisData.recommendation_score}
+                  <div className="text-center">
+                    <div className="relative">
+                    <div style={{ borderColor: `${getCircleColor(analysisData.recommendation_score)}` }}
+                    className={`w-24 h-24 rounded-full border-8 flex items-center justify-center`}>
+                      <div className={`text-2xl font-bold ${getScoreColor(analysisData.recommendation_score)}`}>
+                      {analysisData.recommendation_score}
+                      <span className="text-base font-normal text-slate-500">
+                        {analysisData.recommendation_score >= 0 ? "/100" : "/-100"}
+                      </span>
+                      </div>
+                    </div>
+                    <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2">
+                      <Badge className={`${getScoreBg(analysisData.recommendation_score)} text-white`}>
+                      {getRecommendationText(analysisData.recommendation_score)}
+                      </Badge>
+                    </div>
+                    </div>
+                    <p className="text-xs text-slate-600 mt-2">AI Investment Score</p>
                   </div>
-                </div>
-                <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2">
-                  <Badge className={`${getScoreBg(analysisData.recommendation_score)} text-white`}>
-                    {getRecommendationText(analysisData.recommendation_score)}
-                  </Badge>
-                </div>
-              </div>
-              <p className="text-xs text-slate-600 mt-2">AI Investment Score</p>
-            </div>
-          </div>
-        </CardHeader>
+                  </div>
+                </CardHeader>
 
-        <CardContent className="space-y-6">
-          {/* Analysis Summary */}
+                <CardContent className="space-y-6">
+                  {/* Analysis Summary */}
           <div className="bg-slate-50 rounded-lg p-4">
             <h4 className="font-semibold text-slate-800 mb-2 flex items-center gap-2">
               <Brain className="w-4 h-4 text-blue-500" />

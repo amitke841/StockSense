@@ -1,0 +1,30 @@
+add_context_from_internet: true,
+        response_json_schema: {
+          type: "object",
+          properties: {
+            company_name: { type: "string" },
+            current_price: { type: "number" },
+            price_change: { type: "number" },
+            price_change_percent: { type: "number" },
+            analysis_summary: { type: "string" },
+            social_sentiment: {
+              type: "object",
+              properties: {
+                reddit_score: { type: "number" },
+                twitter_sentiment: { type: "string" },
+                overall_buzz: { type: "string" }
+              }
+            },
+            risk_factors: { 
+              type: "array", 
+              items: { type: "string" }
+            },
+            key_highlights: {
+              type: "array",
+              items: { type: "string" }
+            },
+            market_cap: { type: "number" },
+            pe_ratio: { type: "number" },
+            sector: { type: "string" }
+          }
+        }

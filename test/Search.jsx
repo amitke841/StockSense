@@ -44,24 +44,54 @@ export default function SearchPage() {
     }
     
     try {
-      let aiResult = await InvokeLLM({
-        prompt: `Analyze the stock "${searchQuery}" and provide comprehensive investment analysis based on:
+      let result = await InvokeLLM({
+        prompt: `Analyze the stock "${searchQuery}" and provide comprehensive investment analysis. Include:
+        1. Current stock price and recent performance
+        2. Social media sentiment from Reddit, Twitter, and other platforms
+        3. Calculate an investment recommendation score from -100 to 100 based on:
            - Technical analysis
            - Social sentiment
            - Company fundamentals
            - Market conditions
            - Recent news and events
-        Explain the reasoning behind the score
+        4. Explain the reasoning behind the score
+        5. Risk assessment and key factors to watch
         
         Be thorough and provide actionable insights.`,
-        analysis_summary: { type: "string" }
+        add_context_from_internet: true,
+        response_json_schema: {
+          type: "object",
+          properties: {
+            company_name: { type: "string" },
+            current_price: { type: "number" },
+            price_change: { type: "number" },
+            price_change_percent: { type: "number" },
+            analysis_summary: { type: "string" },
+            social_sentiment: {
+              type: "object",
+              properties: {
+                reddit_score: { type: "number" },
+                twitter_sentiment: { type: "string" },
+                overall_buzz: { type: "string" }
+              }
+            },
+            risk_factors: { 
+              type: "array", 
+              items: { type: "string" }
+            },
+            key_highlights: {
+              type: "array",
+              items: { type: "string" }
+            },
+            market_cap: { type: "number" },
+            pe_ratio: { type: "number" },
+            sector: { type: "string" }
+          }
+        }
       });
 
-      let result = {
-        ...aiResult,
-        stock_symbol: scoreResult?.stock_symbol,
-        sentiment: scoreResult?.sentiment
-      }
+      result.symbol = scoreResult.stock_symbol;
+      result.recommendation_score = scoreResult.sentiment;
 
       setAnalysisResult(result);
       

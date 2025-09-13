@@ -16,10 +16,10 @@ function App() {
   //         serverUp = true
   //         setServerStatus("up") // update state only once
   //       } else {
-  //         await new Promise(resolve => setTimeout(resolve, 2000))
-  //       }
-  //     } catch (err) {
-  //       await new Promise(resolve => setTimeout(resolve, 2000))
+  //           await new Promise(resolve => setTimeout(resolve, 4000))
+  //         }
+  //         } catch (err) {
+  //         await new Promise(resolve => setTimeout(resolve, 4000))
   //     }
   //   }
   // }
