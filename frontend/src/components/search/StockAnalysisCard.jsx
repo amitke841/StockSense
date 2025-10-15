@@ -121,18 +121,18 @@ export default function StockAnalysisCard({ analysisData }) {
             {/* AI Score Display */}
                   <div className="text-center">
                     <div className="relative">
-                    <div style={{ borderColor: `${getCircleColor(analysisData.recommendation_score)}` }}
+                    <div style={{ borderColor: `${getCircleColor(analysisData.score)}` }}
                     className={`w-24 h-24 rounded-full border-8 flex items-center justify-center`}>
-                      <div className={`text-2xl font-bold ${getScoreColor(analysisData.recommendation_score)}`}>
-                      {analysisData.recommendation_score}
+                      <div className={`text-2xl font-bold ${getScoreColor(analysisData.score)}`}>
+                      {analysisData.score}
                       <span className="text-base font-normal text-slate-500">
-                        {analysisData.recommendation_score >= 0 ? "/100" : "/-100"}
+                        {analysisData.score >= 0 ? "/100" : "/-100"}
                       </span>
                       </div>
                     </div>
                     <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2">
-                      <Badge className={`${getScoreBg(analysisData.recommendation_score)} text-white`}>
-                      {getRecommendationText(analysisData.recommendation_score)}
+                      <Badge className={`${getScoreBg(analysisData.score)} text-white`}>
+                      {getRecommendationText(analysisData.score)}
                       </Badge>
                     </div>
                     </div>

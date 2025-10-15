@@ -1,4 +1,4 @@
-// Example: Fetch stock analysis
+
 export async function analyzeStock(query) {
   const response = await fetch("https://stocksense-3oql.onrender.com/getstocksentiment", {
     method: 'POST',
@@ -17,5 +17,3 @@ export async function getData(query) {
   return response.json();
 }
 
-// Add more API functions as needed
-// export async function getUserProfile() { ... }

@@ -19,6 +19,7 @@ export default function SearchPage() {
   const [analysisResult, setAnalysisResult] = useState(null); // Renamed for clarity
   const [error, setError] = useState(null);
   const [scoreResult, setScoreResult] = useState(null);
+  const [stockData, setStockData] = useState(null);
 
 
   const analyzeStock = async () => {
@@ -28,61 +29,59 @@ export default function SearchPage() {
     setAnalysisResult(null); // Clear previous results
     setError(null);
     setScoreResult(null);
+    setStockData(null);
     
     try {
-      const s_score = await analyzeStockApi(searchQuery);
-      setScoreResult(s_score);
+      const score = await analyzeStockApi(searchQuery);
+      setScoreResult(score);
     } catch (err) {
       setError("Failed to analyze stock sentiment.");
     }
 
-    try {
+    try { //MAKE THEM ALL ON THE SAME TRY CATCH, DESRIPTION FROM YF?
       const data = await getDataApi(searchQuery);
-      setScoreResult(data);
+      setStockData(data);
     } catch (err) {
       setError("Failed to get stock data.");
     }
     
-    try {
+    try { //FIX AI TO SHORT DECRIPTION
       let aiResult = await InvokeLLM({
-        prompt: `Analyze the stock "${searchQuery}" and provide comprehensive investment analysis based on:
-           - Technical analysis
-           - Social sentiment
-           - Company fundamentals
-           - Market conditions
-           - Recent news and events
-        Explain the reasoning behind the score
-        
+        prompt: `Analyze the stock "${searchQuery}" and provide comprehensive investment analysis.
         Be thorough and provide actionable insights.`,
-        analysis_summary: { type: "string" }
+        add_context_from_internet: true,
+        response_json_schema: {
+          type: "object",
+          properties: {
+          analysis_summary: { type: "string" }}
+        }
       });
 
       let result = {
         ...aiResult,
-        stock_symbol: scoreResult?.stock_symbol,
-        sentiment: scoreResult?.sentiment
+        symbol: scoreResult.stock_symbol,// caps lock built in
+        score: scoreResult.sentiment,
+        current_price: stockData.currentPrice
       }
 
       setAnalysisResult(result);
       
-       // Set the single result
-      
-      // Save to database
-      await Stock.create({
-        symbol: result.symbol,
-        company_name: result.company_name,
-        current_price: result.current_price,
-        price_change: result.price_change,
-        price_change_percent: result.price_change_percent,
-        recommendation_score: result.recommendation_score,
-        market_cap: result.market_cap,
-        pe_ratio: result.pe_ratio,
-        sector: result.sector,
-        reddit_mentions: Math.floor(Math.random() * 1000) + 50,
-        twitter_sentiment: result.social_sentiment?.twitter_sentiment || "neutral",
-        risk_level: result.recommendation_score > 40 ? "low" : result.recommendation_score > 0 ? "medium" : "high",
-        last_updated: new Date().toISOString()
-      });
+      // // Save to database
+      // await Stock.create({
+      //   symbol: result.symbol,
+      //   company_name: result.company_name,
+      //   current_price: result.current_price,
+      //   price_change: result.price_change,
+      //   price_change_percent: result.price_change_percent,
+      //   recommendation_score: result.recommendation_score,
+      //   market_cap: result.market_cap,
+      //   pe_ratio: result.pe_ratio,
+      //   sector: result.sector,
+      //   reddit_mentions: Math.floor(Math.random() * 1000) + 50,
+      //   twitter_sentiment: result.social_sentiment?.twitter_sentiment || "neutral",
+      //   risk_level: result.recommendation_score > 40 ? "low" : result.recommendation_score > 0 ? "medium" : "high",
+      //   last_updated: new Date().toISOString()
+      // });
       
     } catch (error) {
       setError("Failed to analyze stock. Please try again.");
