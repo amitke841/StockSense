@@ -22,7 +22,7 @@ def getStockSentiment():
         "sentiment": sentiment
     })
     
-@app.route("/getstockdata")
+@app.route("/getstockdata", methods=["POST"])
 def getStockData():
     stock_symbol = request.form.get("stock_symbol", "")
     if not stock_symbol:
