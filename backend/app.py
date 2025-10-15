@@ -6,7 +6,7 @@ import yfinance as yf
 app = Flask(__name__)
 CORS(app)
 
-@app.route("/health")
+@app.route("/healthz")
 def health():
     return jsonify({"status": "ok"})
 
