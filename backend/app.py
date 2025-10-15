@@ -7,7 +7,7 @@ app = Flask(__name__)
 CORS(app)
 
 @app.route("/healthz")
-def health():
+def healthz():
     return jsonify({"status": "ok"})
 
 @app.route("/getstocksentiment", methods=["POST"])
