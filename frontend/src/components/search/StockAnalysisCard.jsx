@@ -125,9 +125,6 @@ export default function StockAnalysisCard({ analysisData }) {
     return `$${num.toLocaleString()}`;
   };
 
-  const priceMetrics = analysisData?.core_price_metrics;
-  const keyMetrics = analysisData?.key_financial_metrics;
-
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -206,28 +203,28 @@ export default function StockAnalysisCard({ analysisData }) {
             <div>
               <h4 className="font-semibold text-slate-800 mb-3">Core Price Metrics</h4>
               <div className="bg-white p-3 rounded-lg border">
-                <MetricItem label="Open" value={priceMetrics?.open} format={formatCurrency} onLabelClick={handleShowInfo} />
-                <MetricItem label="Last Close" value={priceMetrics?.last_close} format={formatCurrency} onLabelClick={handleShowInfo} />
-                <MetricItem label="High" value={priceMetrics?.high} format={formatCurrency} onLabelClick={handleShowInfo} />
-                <MetricItem label="Low" value={priceMetrics?.low} format={formatCurrency} onLabelClick={handleShowInfo} />
-                <MetricItem label="Day Range" value={priceMetrics?.range} onLabelClick={handleShowInfo} />
-                <MetricItem label="Volume" value={priceMetrics?.volume} format={formatNumber} onLabelClick={handleShowInfo} />
-                <MetricItem label="Bid" value={priceMetrics?.bid} onLabelClick={handleShowInfo} />
-                <MetricItem label="Ask" value={priceMetrics?.ask} onLabelClick={handleShowInfo} />
+                <MetricItem label="Open" value={analysisData?.open} format={formatCurrency} onLabelClick={handleShowInfo} />
+                <MetricItem label="Last Close" value={analysisData?.last_close} format={formatCurrency} onLabelClick={handleShowInfo} />
+                <MetricItem label="High" value={analysisData?.high} format={formatCurrency} onLabelClick={handleShowInfo} />
+                <MetricItem label="Low" value={analysisData?.low} format={formatCurrency} onLabelClick={handleShowInfo} />
+                <MetricItem label="Day Range" value={analysisData?.range} onLabelClick={handleShowInfo} />
+                <MetricItem label="Volume" value={analysisData?.volume} format={formatNumber} onLabelClick={handleShowInfo} />
+                <MetricItem label="Bid" value={analysisData?.bid} onLabelClick={handleShowInfo} />
+                <MetricItem label="Ask" value={analysisData?.ask} onLabelClick={handleShowInfo} />
               </div>
             </div>
 
             <div>
               <h4 className="font-semibold text-slate-800 mb-3">Key Metrics</h4>
               <div className="bg-white p-3 rounded-lg border">
-                <MetricItem label="Market Cap" value={keyMetrics?.market_cap} format={formatLargeNumber} onLabelClick={handleShowInfo} />
-                <MetricItem label="P/E Ratio" value={keyMetrics?.pe_ratio?.toFixed(2)} onLabelClick={handleShowInfo} />
-                <MetricItem label="EPS" value={keyMetrics?.eps} format={formatCurrency} onLabelClick={handleShowInfo} />
-                <MetricItem label="Revenue Growth (YoY)" value={keyMetrics?.revenue_growth} onLabelClick={handleShowInfo} />
-                <MetricItem label="Profit Margin" value={keyMetrics?.profit_margin} onLabelClick={handleShowInfo} />
-                <MetricItem label="ROE" value={keyMetrics?.roe} onLabelClick={handleShowInfo} />
-                <MetricItem label="Debt-to-Equity" value={keyMetrics?.debt_to_equity?.toFixed(2)} onLabelClick={handleShowInfo} />
-                <MetricItem label="Beta" value={keyMetrics?.beta?.toFixed(2)} onLabelClick={handleShowInfo} />
+                <MetricItem label="Market Cap" value={analysisData?.market_cap} format={formatLargeNumber} onLabelClick={handleShowInfo} />
+                <MetricItem label="P/E Ratio" value={analysisData?.pe_ratio?.toFixed(2)} onLabelClick={handleShowInfo} />
+                <MetricItem label="EPS" value={analysisData?.eps} format={formatCurrency} onLabelClick={handleShowInfo} />
+                <MetricItem label="Revenue Growth (YoY)" value={analysisData?.revenue_growth} onLabelClick={handleShowInfo} />
+                <MetricItem label="Profit Margin" value={analysisData?.profit_margin} onLabelClick={handleShowInfo} />
+                <MetricItem label="ROE" value={analysisData?.roe} onLabelClick={handleShowInfo} />
+                <MetricItem label="Debt-to-Equity" value={analysisData?.debt_to_equity?.toFixed(2)} onLabelClick={handleShowInfo} />
+                <MetricItem label="Beta" value={analysisData?.beta?.toFixed(2)} onLabelClick={handleShowInfo} />
               </div>
             </div>
           </div>

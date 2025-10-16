@@ -53,13 +53,30 @@ export default function SearchPage() {
       });
 
       const result = {
-        ...aiResult,
+        // ...aiResult,
         symbol: score.stock_symbol.toUpperCase(),
         score: score.sentiment,
         company_name: data.longName,
         current_price: data.currentPrice,
-        open_price: data.open,
-        close_price : 0
+        open: data.open,
+        last_close : data.lastClose,
+        high: data.high,
+        low: data.low,
+        range: data.dayRange,
+        volume: data.volume,
+        bid: data.bid,
+        ask: data.ask,
+        market_cap: data.marketCap,
+        pe_ratio: data.peRatio,
+        eps: data.eps,
+        revenue_growth: data.revenueGrowth,
+        profit_margin: data.profitMargin,
+        roe: data.roe,
+        debt_to_equity: data.dte,
+        beta: data.beta
+        //analysis_summary:
+        //change:
+        //changePS:
       };
 
       setAnalysisResult(result);
