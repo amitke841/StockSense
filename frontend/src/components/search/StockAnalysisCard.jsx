@@ -147,15 +147,15 @@ export default function StockAnalysisCard({ analysisData }) {
                   {formatCurrency(analysisData.current_price)}
                 </span>
                 <div className="flex items-center gap-1">
-                  {analysisData.current_price >= analysisData.open ? (
+                  {analysisData.current_price >= analysisData.last_close ? (
                     <TrendingUp className="w-4 h-4 text-green-500" />
                   ) : (
                     <TrendingDown className="w-4 h-4 text-red-500" />
                   )}
                   <span className={`font-semibold ${
-                    analysisData.current_price >= analysisData.open ? 'text-green-600' : 'text-red-600'
+                    analysisData.current_price >= analysisData.last_close ? 'text-green-600' : 'text-red-600'
                   }`}>
-                    {(analysisData.current_price/analysisData.open).toFixed(1)}%
+                    {analysisData.change_ps.toFixed(1)}%
                   </span>
                 </div>
               </div>

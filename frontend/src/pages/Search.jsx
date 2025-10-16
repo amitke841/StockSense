@@ -41,16 +41,16 @@ export default function SearchPage() {
       const data = await getDataApi(searchQuery);
       setStockData(data);
 
-      let aiResult = await InvokeLLM({
-        prompt: `Analyze the stock "${searchQuery}" and provide comprehensive investment analysis.
-        Be thorough and provide actionable insights.`,
-        add_context_from_internet: true,
-        response_json_schema: {
-          type: "object",
-          properties: {
-          analysis_summary: { type: "string" }}
-        }
-      });
+      // let aiResult = await InvokeLLM({
+      //   prompt: `Analyze the stock "${searchQuery}" and provide comprehensive investment analysis.
+      //   Be thorough and provide actionable insights.`,
+      //   add_context_from_internet: true,
+      //   response_json_schema: {
+      //     type: "object",
+      //     properties: {
+      //     analysis_summary: { type: "string" }}
+      //   }
+      // });
 
       const result = {
         // ...aiResult,
@@ -73,10 +73,10 @@ export default function SearchPage() {
         profit_margin: data.profitMargin,
         roe: data.roe,
         debt_to_equity: data.dte,
-        beta: data.beta
-        //analysis_summary:
+        beta: data.beta,
+        analysis_summary: data.summary,
         //change:
-        //changePS:
+        change_ps: data.changePS
       };
 
       setAnalysisResult(result);
