@@ -25,27 +25,22 @@ export default function SearchPage() {
   const analyzeStock = async () => {
     if (!searchQuery.trim()) return;
     
+    const query = searchQuery.trim().toUpperCase();
+    setSearchQuery(query);
     setIsAnalyzing(true);
-    setAnalysisResult(null); // Clear previous results
+    setAnalysisResult(null);
     setError(null);
     setScoreResult(null);
     setStockData(null);
-    
+
     try {
+      // Run all API calls sequentially in one try block, STOCK DATA WITH STOCK SEN INSIDE, ONE FILE
       const score = await analyzeStockApi(searchQuery);
       setScoreResult(score);
-    } catch (err) {
-      setError("Failed to analyze stock sentiment.");
-    }
 
-    try { //MAKE THEM ALL ON THE SAME TRY CATCH, DESRIPTION FROM YF?
       const data = await getDataApi(searchQuery);
       setStockData(data);
-    } catch (err) {
-      setError("Failed to get stock data.");
-    }
-    
-    try { //FIX AI TO SHORT DECRIPTION
+
       let aiResult = await InvokeLLM({
         prompt: `Analyze the stock "${searchQuery}" and provide comprehensive investment analysis.
         Be thorough and provide actionable insights.`,
@@ -57,37 +52,25 @@ export default function SearchPage() {
         }
       });
 
-      let result = {
+      const result = {
         ...aiResult,
-        symbol: scoreResult.stock_symbol,// caps lock built in
-        score: scoreResult.sentiment,
-        current_price: stockData.currentPrice
-      }
+        symbol: score.stock_symbol.toUpperCase(),
+        score: score.sentiment,
+        company_name: data.longName,
+        current_price: data.currentPrice,
+        open_price: data.open,
+        close_price : 0
+      };
 
       setAnalysisResult(result);
-      
-      // // Save to database
-      // await Stock.create({
-      //   symbol: result.symbol,
-      //   company_name: result.company_name,
-      //   current_price: result.current_price,
-      //   price_change: result.price_change,
-      //   price_change_percent: result.price_change_percent,
-      //   recommendation_score: result.recommendation_score,
-      //   market_cap: result.market_cap,
-      //   pe_ratio: result.pe_ratio,
-      //   sector: result.sector,
-      //   reddit_mentions: Math.floor(Math.random() * 1000) + 50,
-      //   twitter_sentiment: result.social_sentiment?.twitter_sentiment || "neutral",
-      //   risk_level: result.recommendation_score > 40 ? "low" : result.recommendation_score > 0 ? "medium" : "high",
-      //   last_updated: new Date().toISOString()
-      // });
-      
+
+      // Optionally save to database here
+ 
     } catch (error) {
       setError("Failed to analyze stock. Please try again.");
       console.error("Analysis error:", error);
     }
-    
+
     setIsAnalyzing(false);
   };
 

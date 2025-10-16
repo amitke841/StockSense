@@ -1,16 +1,48 @@
-
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { TrendingUp, TrendingDown, AlertTriangle, CheckCircle, Target, Brain, Star } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { TrendingUp, TrendingDown, AlertTriangle, CheckCircle, Target, Brain, Star, Info } from 'lucide-react';import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
 import { User } from "@/api/entities";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { metricDefinitions } from './metricDefinitions'; 
+
+const MetricItem = ({ label, value, format, onLabelClick }) => {
+    const formattedValue = format ? format(value) : value;
+    return (
+        <div className="flex justify-between items-center text-sm py-2 border-b border-slate-200 last:border-b-0">
+            <button onClick={() => onLabelClick(label)} className="flex items-center gap-1.5 text-slate-500 hover:text-blue-600 transition-colors group">
+                <span className="group-hover:underline">{label}</span>
+                <Info className="w-3 h-3" />
+            </button>
+            <span className="font-semibold text-slate-800">{formattedValue || 'N/A'}</span>
+        </div>
+    );
+};
 
 export default function StockAnalysisCard({ analysisData }) {
   const [isWatched, setIsWatched] = useState(false);
   const [user, setUser] = useState(null);
+    const [infoAlert, setInfoAlert] = useState({ open: false, title: "", description: "" });
+
+  const handleShowInfo = (metricLabel) => {
+    if (metricDefinitions[metricLabel]) {
+      setInfoAlert({
+        open: true,
+        title: metricLabel,
+        description: metricDefinitions[metricLabel],
+      });
+    }
+  };
 
   useEffect(() => {
     const checkWatchlist = async () => {
@@ -37,6 +69,7 @@ export default function StockAnalysisCard({ analysisData }) {
     
     // Optimistic UI update
     setIsWatched(!isWatched);
+    await User.updateMyUserData({ watchlist: newWatchlist });
     setUser(prev => ({ ...prev, watchlist: newWatchlist }));
 
     try { // Re-added try-catch for robustness, as original code had it, and outline didn't explicitly forbid it, but removed it. Sticking to original intent if not explicitly told to remove error handling.
@@ -82,6 +115,19 @@ export default function StockAnalysisCard({ analysisData }) {
     return 'Strong Sell';
   };
 
+  const formatNumber = (num) => num ? num.toLocaleString() : 'N/A';
+  const formatCurrency = (num) => num ? `$${num.toFixed(2)}` : 'N/A';
+  const formatLargeNumber = (num) => {
+    if (!num) return 'N/A';
+    if (num >= 1e12) return `$${(num / 1e12).toFixed(2)}T`;
+    if (num >= 1e9) return `$${(num / 1e9).toFixed(2)}B`;
+    if (num >= 1e6) return `$${(num / 1e6).toFixed(2)}M`;
+    return `$${num.toLocaleString()}`;
+  };
+
+  const priceMetrics = analysisData?.core_price_metrics;
+  const keyMetrics = analysisData?.key_financial_metrics;
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -101,18 +147,18 @@ export default function StockAnalysisCard({ analysisData }) {
               <p className="text-slate-600 mb-2">{analysisData.company_name}</p>
               <div className="flex items-center gap-4">
                 <span className="text-3xl font-bold text-slate-800">
-                  ${analysisData.current_price?.toFixed(2)}
+                  {formatCurrency(analysisData.current_price)}
                 </span>
                 <div className="flex items-center gap-1">
-                  {analysisData.price_change >= 0 ? (
+                  {analysisData.current_price >= analysisData.open ? (
                     <TrendingUp className="w-4 h-4 text-green-500" />
                   ) : (
                     <TrendingDown className="w-4 h-4 text-red-500" />
                   )}
                   <span className={`font-semibold ${
-                    analysisData.price_change >= 0 ? 'text-green-600' : 'text-red-600'
+                    analysisData.current_price >= analysisData.open ? 'text-green-600' : 'text-red-600'
                   }`}>
-                    {analysisData.price_change_percent?.toFixed(1)}%
+                    {(analysisData.current_price/analysisData.open).toFixed(1)}%
                   </span>
                 </div>
               </div>
@@ -142,8 +188,13 @@ export default function StockAnalysisCard({ analysisData }) {
                 </CardHeader>
 
                 <CardContent className="space-y-6">
+                  {/* Graph Placeholder */}
+                  <div className="bg-gray-200 rounded-lg p-8 flex items-center justify-center">
+                    <span className="text-gray-500 text-lg font-medium">graph</span>
+                  </div>
+
                   {/* Analysis Summary */}
-          <div className="bg-slate-50 rounded-lg p-4">
+                    <div className="bg-slate-50 rounded-lg p-4">
             <h4 className="font-semibold text-slate-800 mb-2 flex items-center gap-2">
               <Brain className="w-4 h-4 text-blue-500" />
               AI Analysis Summary
@@ -151,63 +202,40 @@ export default function StockAnalysisCard({ analysisData }) {
             <p className="text-slate-700">{analysisData.analysis_summary}</p>
           </div>
 
-          {/* Key Metrics */}
           <div className="grid md:grid-cols-2 gap-6">
-            {/* Company Data */}
             <div>
-              <h4 className="font-semibold text-slate-800 mb-3">Company Metrics</h4>
-              <div className="space-y-2">
-                <div className="flex justify-between">
-                  <span className="text-slate-600">Sector</span>
-                  <Badge variant="outline">{analysisData.sector}</Badge>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-slate-600">Market Cap</span>
-                  <span className="font-semibold">${(analysisData.market_cap / 1e9).toFixed(1)}B</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-slate-600">P/E Ratio</span>
-                  <span className="font-semibold">{analysisData.pe_ratio?.toFixed(1)}</span>
-                </div>
+              <h4 className="font-semibold text-slate-800 mb-3">Core Price Metrics</h4>
+              <div className="bg-white p-3 rounded-lg border">
+                <MetricItem label="Open" value={priceMetrics?.open} format={formatCurrency} onLabelClick={handleShowInfo} />
+                <MetricItem label="Last Close" value={priceMetrics?.last_close} format={formatCurrency} onLabelClick={handleShowInfo} />
+                <MetricItem label="High" value={priceMetrics?.high} format={formatCurrency} onLabelClick={handleShowInfo} />
+                <MetricItem label="Low" value={priceMetrics?.low} format={formatCurrency} onLabelClick={handleShowInfo} />
+                <MetricItem label="Day Range" value={priceMetrics?.range} onLabelClick={handleShowInfo} />
+                <MetricItem label="Volume" value={priceMetrics?.volume} format={formatNumber} onLabelClick={handleShowInfo} />
+                <MetricItem label="Bid" value={priceMetrics?.bid} onLabelClick={handleShowInfo} />
+                <MetricItem label="Ask" value={priceMetrics?.ask} onLabelClick={handleShowInfo} />
               </div>
             </div>
 
-            {/* Social Sentiment */}
             <div>
-              <h4 className="font-semibold text-slate-800 mb-3">Social Sentiment</h4>
-              <div className="space-y-3">
-                <div>
-                  <div className="flex justify-between text-sm mb-1">
-                    <span className="text-slate-600">Reddit Score</span>
-                    <span>{analysisData.social_sentiment?.reddit_score}/10</span>
-                  </div>
-                  <Progress value={(analysisData.social_sentiment?.reddit_score * 10)} className="h-2" />
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-slate-600">Twitter Sentiment</span>
-                  <Badge className={
-                    analysisData.social_sentiment?.twitter_sentiment === 'bullish' ? 'bg-green-500/10 text-green-400' :
-                    analysisData.social_sentiment?.twitter_sentiment === 'bearish' ? 'bg-red-500/10 text-red-400' :
-                    'bg-secondary'
-                  }>
-                    {analysisData.social_sentiment?.twitter_sentiment}
-                  </Badge>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-slate-600">Overall Buzz</span>
-                  <span className="font-semibold capitalize">
-                    {analysisData.social_sentiment?.overall_buzz}
-                  </span>
-                </div>
+              <h4 className="font-semibold text-slate-800 mb-3">Key Metrics</h4>
+              <div className="bg-white p-3 rounded-lg border">
+                <MetricItem label="Market Cap" value={keyMetrics?.market_cap} format={formatLargeNumber} onLabelClick={handleShowInfo} />
+                <MetricItem label="P/E Ratio" value={keyMetrics?.pe_ratio?.toFixed(2)} onLabelClick={handleShowInfo} />
+                <MetricItem label="EPS" value={keyMetrics?.eps} format={formatCurrency} onLabelClick={handleShowInfo} />
+                <MetricItem label="Revenue Growth (YoY)" value={keyMetrics?.revenue_growth} onLabelClick={handleShowInfo} />
+                <MetricItem label="Profit Margin" value={keyMetrics?.profit_margin} onLabelClick={handleShowInfo} />
+                <MetricItem label="ROE" value={keyMetrics?.roe} onLabelClick={handleShowInfo} />
+                <MetricItem label="Debt-to-Equity" value={keyMetrics?.debt_to_equity?.toFixed(2)} onLabelClick={handleShowInfo} />
+                <MetricItem label="Beta" value={keyMetrics?.beta?.toFixed(2)} onLabelClick={handleShowInfo} />
               </div>
             </div>
           </div>
 
-          {/* Key Highlights */}
           {analysisData.key_highlights && (
             <div>
               <h4 className="font-semibold text-slate-800 mb-3 flex items-center gap-2">
-                <CheckCircle className="w-4 h-4 text-green-400" />
+                <CheckCircle className="w-4 h-4 text-green-500" />
                 Key Highlights
               </h4>
               <div className="grid gap-2">
@@ -221,17 +249,16 @@ export default function StockAnalysisCard({ analysisData }) {
             </div>
           )}
 
-          {/* Risk Factors */}
           {analysisData.risk_factors && (
             <div>
               <h4 className="font-semibold text-slate-800 mb-3 flex items-center gap-2">
-                <AlertTriangle className="w-4 h-4 text-yellow-400" />
+                <AlertTriangle className="w-4 h-4 text-orange-500" />
                 Risk Factors
               </h4>
               <div className="grid gap-2">
                 {analysisData.risk_factors.map((risk, index) => (
                   <div key={index} className="flex items-start gap-2 text-sm">
-                    <div className="w-1.5 h-1.5 bg-yellow-400 rounded-full mt-2 flex-shrink-0"></div>
+                    <div className="w-1.5 h-1.5 bg-orange-500 rounded-full mt-2 flex-shrink-0"></div>
                     <span className="text-slate-700">{risk}</span>
                   </div>
                 ))}
@@ -239,8 +266,7 @@ export default function StockAnalysisCard({ analysisData }) {
             </div>
           )}
 
-          {/* Investment Strength Meter */}
-          <div className="bg-gradient-to-r from-blue-500/10 to-purple-500/10 rounded-lg p-4">
+          <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg p-4">
             <h4 className="font-semibold text-slate-800 mb-3 flex items-center gap-2">
               <Target className="w-4 h-4 text-blue-500" />
               Investment Strength
@@ -252,13 +278,26 @@ export default function StockAnalysisCard({ analysisData }) {
             </div>
             <div className="relative h-4 bg-gradient-to-r from-red-500 via-yellow-500 to-green-500 rounded-full">
               <div 
-                className="absolute w-4 h-4 bg-white rounded-full border-2 border-slate-700 transform -translate-x-1/2" // Removed dark:border-slate-300
+                className="absolute w-4 h-4 bg-white rounded-full border-2 border-slate-700 transform -translate-x-1/2"
                 style={{ left: `${((analysisData.recommendation_score + 100) / 200) * 100}%` }}
               ></div>
             </div>
           </div>
         </CardContent>
       </Card>
+      <AlertDialog open={infoAlert.open} onOpenChange={(open) => setInfoAlert({ ...infoAlert, open })}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{infoAlert.title}</AlertDialogTitle>
+            <AlertDialogDescription className="pt-4 text-base text-slate-700">
+              {infoAlert.description}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogAction>Got it</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </motion.div>
   );
 }
