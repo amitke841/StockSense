@@ -1,0 +1,26 @@
+change $, change %
+
+open
+last close
+high
+low
+range(year range)
+volume (avg volume)
+bid
+ask
+
+
+P/E Ratio
+Market Cap
+EPS
+Revenue growth
+profit margin
+ROE
+Debt-to-Equity (D/E) Ratio
+beta
+
+
+base44: add bar to change period, add more info, refresh button, add info panel for each data, add time stamp and if market open, sector on top, animation and bliking dot
+
+ADD PRINT TO PYTHON METHODS
+MOVE SUMMARY DOWN
