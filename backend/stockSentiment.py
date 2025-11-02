@@ -157,4 +157,4 @@ def get_stock_sentiment(stock_symbol: str) -> float:
         if not isinstance(e, RuntimeError):
             e = RuntimeError(str(e))
         print(f"[ERROR] {e}")
-        return 999
+        return e
