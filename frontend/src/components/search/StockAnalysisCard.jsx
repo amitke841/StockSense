@@ -87,7 +87,7 @@ export default function StockAnalysisCard({ analysisData }) {
     if (score > 60) return 'text-green-900';
     if (score > 20) return 'text-green-600';
     if (score > -20) return 'text-yellow-600';
-    if (score > -60) return 'bg-red-600';
+    if (score > -60) return 'text-red-600';
     return 'text-red-900';
   };
 

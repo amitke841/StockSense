@@ -33,7 +33,7 @@ export default function SearchPage() {
       const s_score = await analyzeStockApi(searchQuery);
       setScoreResult(s_score);
     } catch (err) {
-      setError("Failed to analyze stock sentiment.");
+      setError("ERROR - couldn'");
     }
 
     try {

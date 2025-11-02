@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { InvokeLLM } from "@/api/integrations";
 import { Stock } from "@/api/entities";
@@ -84,8 +83,8 @@ export default function SearchPage() {
       // Optionally save to database here
  
     } catch (error) {
+      console.error("Error during stock analysis:", error); // Log exact error
       setError("Failed to analyze stock. Please try again.");
-      console.error("Analysis error:", error);
     }
 
     setIsAnalyzing(false);

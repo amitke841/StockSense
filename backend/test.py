@@ -13,7 +13,9 @@ else:
 
 sentiment = (get_stock_sentiment(stock))
 
-if sentiment > 0:
+if sentiment == 999:
+    print(Fore.MAGENTA + "A")
+elif sentiment > 0: 
     print(Fore.GREEN + f"Sentiment for {stock} is positive with a score of {sentiment}")
 elif sentiment < 0:
     print(Fore.RED + f"Sentiment for {stock} is negative with a score of {sentiment}")

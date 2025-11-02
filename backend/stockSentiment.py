@@ -1,103 +1,99 @@
-from pydoc import text
-import nltk
-from nltk.sentiment import SentimentIntensityAnalyzer
-from dotenv import load_dotenv
 import os
+import nltk
 import praw
 import yfinance as yf
 import pandas as pd
-import numpy as np
-from yfinance import shared
+from nltk.sentiment import SentimentIntensityAnalyzer
+from dotenv import load_dotenv
 import itertools
-        
+
+# --- Load environment variables ---
 load_dotenv()
 required_vars = ['REDDIT_CLIENT_ID', 'REDDIT_CLIENT_SECRET', 'REDDIT_USER_AGENT']
 missing_vars = [var for var in required_vars if not os.getenv(var)]
-
 if missing_vars:
-    print(f"Missing environment variables: {', '.join(missing_vars)}")
-    print("Please update your .env file with the missing values.")
-    exit(2)
+    raise RuntimeError(f"Missing environment variables: {', '.join(missing_vars)}")
 
-nltk.download('vader_lexicon', quiet= True)
+# --- NLTK setup ---
+nltk.download('vader_lexicon', quiet=True)
+
 
 class stockInfo:
-    def __init__(self):
-        pass
-
-    def symbol_exists(self, symbol):
-        ticker = yf.Ticker(symbol)
-        history = ticker.history(period="1d")
-        error_message = shared._ERRORS.get(symbol)
-        if error_message:
-            # print("Error for ticker:", error_message)
-            return False
-        return True
-
-class postData:
-    def __init__(self):
-        pass
-
-    def get_posts(self):
-        raise NotImplementedError("Subclasses must implement get_posts")
-
-class redditPostData(postData):
-    def __init__(self):
-        super().__init__()
-        self.reddit = praw.Reddit(
-            client_id=os.getenv('REDDIT_CLIENT_ID'),
-            client_secret=os.getenv('REDDIT_CLIENT_SECRET'),
-            user_agent=os.getenv('REDDIT_USER_AGENT')
-        )
-
-    def get_submissions(self, stock, time_period):
-        print(f"Trying tp extract Reddit posts for {stock} last {time_period}")
-        listing = self.reddit.subreddit("stocks+investing+wallstreetbets").search(
-                f"{stock} stock", limit=100, sort="hot", time_filter=time_period)
-        # try to extract the first element in the listing
-        _exhausted = object()  # Unique sentinel
-        first_item = next(listing, _exhausted)
-        if first_item is _exhausted:
-            return None
-        else:
-            return itertools.chain([first_item], listing)
-            
-        
-    def get_posts(self, stock_symbol):
-        posts = []
-        submissions = None
+    def symbol_exists(self, symbol: str) -> bool:
+        """
+        Returns True if ticker exposes a price, otherwise raises RuntimeError.
+        """
         try:
-            submissions = self.get_submissions(stock_symbol, "day")
-            if submissions is None:
-                submissions = self.get_submissions(stock_symbol,"week")
-                if submissions is None:
-                    submissions = self.get_submissions(stock_symbol,"month")
-                    if submissions is None:
-                        submissions = self.get_submissions(stock_symbol,"year")
-                        if submissions is None:
-                            print(f"No Reddit posts from the last year were found for {stock_symbol}.")
-                            return pd.DataFrame()
+            ticker = yf.Ticker(symbol)
+            price = ticker.info.get("currentPrice")
+            return price is not None
+        except Exception as e:
+            # unify to RuntimeError
+            raise RuntimeError(f"Stock symbol '{symbol}' lookup failed: {e}") from e
 
-            for post in submissions:
-                try:
-                    posts.append({
-                        "title": getattr(post, "title", "") or "",
-                        "text": getattr(post, "selftext", "") or "",
-                        "score": getattr(post, "score", 0) or 0,
-                        "created_utc": getattr(post, "created_utc", None)
-                    })
-                except Exception as inner_e:
-                    print(f"Skipping a post due to error: {inner_e}")
-                    continue
-        except Exception as outer_e:
-            print(f"Reddit fetch failed: {outer_e}")
-            return pd.DataFrame()
+
+class redditPostData:
+    def __init__(self):
+        try:
+            self.reddit = praw.Reddit(
+                client_id=os.getenv('REDDIT_CLIENT_ID'),
+                client_secret=os.getenv('REDDIT_CLIENT_SECRET'),
+                user_agent=os.getenv('REDDIT_USER_AGENT')
+            )
+        except Exception as e:
+            raise RuntimeError(f"Failed to initialize Reddit client: {e}") from e
+
+    def get_submissions(self, stock: str, time_period: str):
+        try:
+            listing = self.reddit.subreddit("stocks+investing+wallstreetbets").search(
+                f"{stock} stock", limit=100, sort="hot", time_filter=time_period
+            )
+            first_item = next(listing, None)
+            if first_item is None:
+                return None
+            return itertools.chain([first_item], listing)
+        except Exception as e:
+            raise RuntimeError(f"Failed to fetch submissions for {stock} ({time_period}): {e}") from e
+
+    def get_posts(self, stock_symbol: str) -> pd.DataFrame:
+        posts = []
+        print("Starting to extract posts...")
+        # try time windows in descending freshness
+        for period in ["day", "week", "month", "year"]:
+            print(f"extracting posts for: {period}")
+            submissions = self.get_submissions(stock_symbol, period)
+            if submissions:
+                break
+            else:
+                print("Resuming search with larger period...")
+        else:
+            # no submissions found in any window -> raise runtime error
+            raise RuntimeError(f"No Reddit posts found for '{stock_symbol}' in the past year.")
+
+        for post in submissions:
+            try:
+                posts.append({
+                    "title": getattr(post, "title", "") or "",
+                    "text": getattr(post, "selftext", "") or "",
+                    "score": getattr(post, "score", 0) or 0,
+                    "created_utc": getattr(post, "created_utc", None)
+                })
+            except Exception as inner_e:
+                # skip malformed post but continue processing others
+                print(f"Skipping a post due to inner error: {inner_e}")
+                continue
 
         return pd.DataFrame(posts)
 
+
 class sentimentAnalysis:
     def __init__(self):
-        self.sia = SentimentIntensityAnalyzer()
+        try:
+            self.sia = SentimentIntensityAnalyzer()
+        except Exception as e:
+            raise RuntimeError(f"Failed to initialize SentimentIntensityAnalyzer: {e}") from e
+
+        # extend lexicon
         self.sia.lexicon.update({
             'bagholder': -3.0,
             'scam': -4.0,
@@ -105,60 +101,60 @@ class sentimentAnalysis:
             'undervalued': 2.5,
             'moon': 3.0,
             'rekt': -3.5
-        }) 
+        })
 
-    # def which_site(self, stock_symbol):
-        # only reddit for now
+    def predict_trend(self, posts_df: pd.DataFrame) -> float:
+        # return a float between -1 and 1 (or 0 if no useful posts)
+        if posts_df is None or posts_df.empty:
+            return 0.0
 
-    def analyze_sentiment(self, text):
-        return self.sia.polarity_scores(text)['compound']
-    
-    def predict_trend(self, posts_df):
-        if posts_df.empty or 'title' not in posts_df or 'text' not in posts_df:
-            return 0
-
-
-    # Combine title + text into one content field
         posts_df['title'] = posts_df['title'].fillna('')
         posts_df['text'] = posts_df['text'].fillna('')
         posts_df['content'] = posts_df['title'] + " " + posts_df['text']
 
-    # Filter out very short / low-content posts
         posts_df = posts_df[posts_df['content'].str.len() > 5]
         if posts_df.empty:
-            return 0  # no useful posts -> neutral
+            return 0.0
 
-    # Compute sentiment with weighted title/text
         def sentiment_row(row):
             title_score = self.sia.polarity_scores(row['title'])['compound']
             text_score = self.sia.polarity_scores(row['text'])['compound']
             return (0.7 * title_score) + (0.3 * text_score)
 
         posts_df['sentiment'] = posts_df.apply(sentiment_row, axis=1)
+        posts_df['weight'] = posts_df['score'] + 1  # avoid zero weight
 
-    # Weight by Reddit score (upvotes)
-        posts_df['weight'] = posts_df['score'] + 1  # avoid zero division
         weighted_sum = (posts_df['sentiment'] * posts_df['weight']).sum()
         total_weight = posts_df['weight'].sum()
+        return (weighted_sum / total_weight) if total_weight != 0 else 0.0
 
-        avg_sentiment = weighted_sum / total_weight if total_weight != 0 else 0
-        return avg_sentiment
 
-    
-def get_stock_sentiment(stock_symbol: str):
+def get_stock_sentiment(stock_symbol: str) -> float:
+    """
+    Returns integer sentiment in range -100..100 on success.
+    On error, returns float('nan') and prints a unified RuntimeError message.
+    All underlying errors are raised as RuntimeError, but this function catches them
+    and returns the numeric sentinel float('nan') so callers always receive a numeric result.
+    """
     try:
         stock_symbol = stock_symbol.upper().strip()
         info = stockInfo()
         if not info.symbol_exists(stock_symbol):
-            print(f"Stock symbol {stock_symbol} does not exist.")
-            exit(2)
+            # symbol_exists raises RuntimeError on internal failure, but if it returns False we also raise
+            raise RuntimeError(f"Stock symbol '{stock_symbol}' wasn't found.")
+
         reddit_data = redditPostData()
         posts_df = reddit_data.get_posts(stock_symbol)
+
         analyzer = sentimentAnalysis()
-        sentiment = analyzer.predict_trend(posts_df)
-        sentiment = round(sentiment * 100)
-        return sentiment
+        sentiment = analyzer.predict_trend(posts_df)  # -1.0 .. 1.0
+        print(f"SUCCEED. result for {stock_symbol} is {sentiment*100}")
+        return round(sentiment * 100)  # integer in -100..100
 
     except Exception as e:
-        print(f"Error occurred: {str(e)}")
-        return "ERORR"
+        # unify printed error message and return numeric sentinel outside valid range
+        # ensure exception type is RuntimeError
+        if not isinstance(e, RuntimeError):
+            e = RuntimeError(str(e))
+        print(f"[ERROR] {e}")
+        return 999

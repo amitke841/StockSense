@@ -1,35 +1,57 @@
 import yfinance as yf
 
-def get_stock_data(stock_symbol): 
-    
-    tckr = yf.Ticker(stock_symbol)
-    stockData = {}
-    
-    stockData['currentPrice'] = tckr.info['currentPrice']
-    stockData['longName'] = tckr.info['longName']
-    stockData['sector'] = tckr.info['sector'] #
-    
-    stockData['open'] = tckr.info['open']
-    stockData['lastClose'] = tckr.info['previousClose']
-    stockData['high'] = tckr.info['dayHigh']
-    stockData['low'] = tckr.info['dayLow']
-    stockData['dayRange'] = tckr.info['regularMarketDayRange']
-    stockData['volume'] = tckr.info['volume']
-    stockData['avgVolume'] = tckr.info['averageVolume'] #
-    stockData['bid'] = tckr.info['bid']
-    stockData['ask'] = tckr.info['ask']
-    
-    stockData['marketCap'] = tckr.info['marketCap']
-    stockData['peRatio'] = tckr.info['trailingPE']
-    stockData['eps'] = tckr.info['trailingEps']
-    stockData['revenueGrowth'] = tckr.info['revenueGrowth']
-    stockData['profitMargin'] = tckr.info['profitMargins']
-    stockData['roe'] = tckr.info['returnOnEquity']
-    stockData['dte'] = tckr.info['debtToEquity']
-    stockData['beta'] = tckr.info['beta']
-    
-    stockData['change'] = tckr.info['currentPrice'] - tckr.info['previousClose'] #
-    stockData['changePS'] = (stockData['change']/tckr.info['previousClose'])*100 #
-    stockData['summary'] = tckr.info['longBusinessSummary'] #
-    
-    return stockData
+def get_stock_data(stock_symbol):
+    try:
+        tckr = yf.Ticker(stock_symbol)
+        info = tckr.info
+
+        # Verify that data is valid
+        if not info or 'currentPrice' not in info:
+            raise RuntimeError(f"Could not fetch data for symbol '{stock_symbol}'")
+
+        def safe_get(key):
+            """Return value if exists and not None, else '---'"""
+            val = info.get(key, "---")
+            return "---" if val is None else val
+
+        stockData = {
+            'currentPrice': safe_get('currentPrice'),
+            'longName': safe_get('longName'),
+            'sector': safe_get('sector'),
+
+            'open': safe_get('open'),
+            'lastClose': safe_get('previousClose'),
+            'high': safe_get('dayHigh'),
+            'low': safe_get('dayLow'),
+            'dayRange': safe_get('regularMarketDayRange'),
+            'volume': safe_get('volume'),
+            'avgVolume': safe_get('averageVolume'),
+            'bid': safe_get('bid'),
+            'ask': safe_get('ask'),
+
+            'marketCap': safe_get('marketCap'),
+            'peRatio': safe_get('trailingPE'),
+            'eps': safe_get('trailingEps'),
+            'revenueGrowth': safe_get('revenueGrowth'),
+            'profitMargin': safe_get('profitMargins'),
+            'roe': safe_get('returnOnEquity'),
+            'dte': safe_get('debtToEquity'),
+            'beta': safe_get('beta'),
+
+            'summary': safe_get('longBusinessSummary')
+        }
+
+        # Calculate change & change percentage safely
+        price = info.get('currentPrice')
+        prev_close = info.get('previousClose')
+        if price is not None and prev_close:
+            stockData['change'] = round(price - prev_close, 2)
+            stockData['changePS'] = round(((price - prev_close) / prev_close) * 100, 2)
+        else:
+            stockData['change'] = '---'
+            stockData['changePS'] = '---'
+
+        return stockData
+
+    except Exception as e:
+        raise RuntimeError(f"Error fetching stock data for '{stock_symbol}': {e}")
