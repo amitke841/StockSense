@@ -179,12 +179,20 @@ export default function StockAnalysisCard({ analysisData }) {
                       </Badge>
                     </div>
                     </div>
-                    <p className="text-xs text-slate-600 mt-2">AI Investment Score</p>
+                    <p className="text-xs text-slate-600 mt-2">{analysisData.symbol} Score</p>
                   </div>
                   </div>
                 </CardHeader>
 
                 <CardContent className="space-y-6">
+                  {/* Prediction Value */}
+                  <div className="bg-slate-50 rounded-lg p-4">
+                    <h4 className="font-semibold text-slate-800 mb-2">Predicted Value</h4>
+                    <p className="text-slate-700 text-lg">
+                      {analysisData.prediction ? `$${analysisData.prediction.toFixed(2)}` : "N/A"}
+                    </p>
+                  </div>
+
                   {/* Graph Placeholder */}
                   <div className="bg-gray-200 rounded-lg p-8 flex items-center justify-center">
                     <span className="text-gray-500 text-lg font-medium">graph</span>
@@ -194,7 +202,7 @@ export default function StockAnalysisCard({ analysisData }) {
                     <div className="bg-slate-50 rounded-lg p-4">
             <h4 className="font-semibold text-slate-800 mb-2 flex items-center gap-2">
               <Brain className="w-4 h-4 text-blue-500" />
-              AI Analysis Summary
+              {analysisData.symbol} Info
             </h4>
             <p className="text-slate-700">{analysisData.analysis_summary}</p>
           </div>
@@ -229,40 +237,6 @@ export default function StockAnalysisCard({ analysisData }) {
             </div>
           </div>
 
-          {analysisData.key_highlights && (
-            <div>
-              <h4 className="font-semibold text-slate-800 mb-3 flex items-center gap-2">
-                <CheckCircle className="w-4 h-4 text-green-500" />
-                Key Highlights
-              </h4>
-              <div className="grid gap-2">
-                {analysisData.key_highlights.map((highlight, index) => (
-                  <div key={index} className="flex items-start gap-2 text-sm">
-                    <div className="w-1.5 h-1.5 bg-blue-500 rounded-full mt-2 flex-shrink-0"></div>
-                    <span className="text-slate-700">{highlight}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {analysisData.risk_factors && (
-            <div>
-              <h4 className="font-semibold text-slate-800 mb-3 flex items-center gap-2">
-                <AlertTriangle className="w-4 h-4 text-orange-500" />
-                Risk Factors
-              </h4>
-              <div className="grid gap-2">
-                {analysisData.risk_factors.map((risk, index) => (
-                  <div key={index} className="flex items-start gap-2 text-sm">
-                    <div className="w-1.5 h-1.5 bg-orange-500 rounded-full mt-2 flex-shrink-0"></div>
-                    <span className="text-slate-700">{risk}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
           <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg p-4">
             <h4 className="font-semibold text-slate-800 mb-3 flex items-center gap-2">
               <Target className="w-4 h-4 text-blue-500" />
@@ -276,7 +250,7 @@ export default function StockAnalysisCard({ analysisData }) {
             <div className="relative h-4 bg-gradient-to-r from-red-500 via-yellow-500 to-green-500 rounded-full">
               <div 
                 className="absolute w-4 h-4 bg-white rounded-full border-2 border-slate-700 transform -translate-x-1/2"
-                style={{ left: `${((analysisData.recommendation_score + 100) / 200) * 100}%` }}
+                style={{ left: `${((analysisData.score + 100) / 200) * 100}%` }}
               ></div>
             </div>
           </div>

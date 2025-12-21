@@ -1,9 +1,13 @@
-ADD PRINT TO PYTHON METHODS
-Move to server northflask, change to port 5000 like app.py
+model change settings,
+LOCAL FILE ON MY COMPUTER GITIGNORE, clean project and modules from req.txt
+
+fix stock data
 ai model
-sentiment upgrade - more sites, with confidence, if low he fix himself, my own nltk
-some symbols dont work
+sentiment upgrade - more sites, with confidence, -if low he- fix himself, my own nltk
+some symbols dont work - but they are on yahoo finance site
 graph
+if someone of them dont work, just fill with --
+confidence
 
 base44: add bar to change period, add more info, refresh button, add info panel for each data, add time stamp and if market open, sector on top, animation and bliking dot
 
@@ -11,3 +15,7 @@ MOVE SUMMARY DOWN
 
 REST DRAW.io
 NEWS
+
+
+ENV token hf, env reddit add to secret group
+when app is waiting for server write it

@@ -11,7 +11,7 @@ function App() {
   //   let serverUp = false
   //   while (!serverUp) {
   //     try {
-  //       const response = await fetch("https://stocksense-3oql.onrender.com/healthz")
+  //       const response = await fetch("https://endpoint--stocksense--ksxg2vxqsywy.code.run/healthz")
   //       if (response.ok) {
   //         serverUp = true
   //         setServerStatus("up") // update state only once

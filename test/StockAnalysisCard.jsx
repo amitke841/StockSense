@@ -111,7 +111,7 @@ export default function StockAnalysisCard({ analysisData }) {
                   <span className={`font-semibold ${
                     analysisData.current_price >= analysisData.open ? 'text-green-600' : 'text-red-600'
                   }`}>
-                    {(analysisData.current_price/analysisData.open).toFixed(1)}%
+                    {(analysisData.current_price / analysisData.open).toFixed(1)}%
                   </span>
                 </div>
               </div>
@@ -140,13 +140,21 @@ export default function StockAnalysisCard({ analysisData }) {
                   </div>
                 </CardHeader>
 
-                <CardContent className="space-y-6">
-                  {/* Graph Placeholder */}
-                  <div className="bg-gray-200 rounded-lg p-8 flex items-center justify-center">
-                    <span className="text-gray-500 text-lg font-medium">graph</span>
-                  </div>
+        <CardContent className="space-y-6">
+          {/* Predicted Value */}
+          <div className="bg-slate-50 rounded-lg p-4">
+            <h4 className="font-semibold text-slate-800 mb-2">Predicted Value</h4>
+            <p className="text-slate-700 text-lg">
+              ${analysisData.prediction ? analysisData.prediction.toFixed(2) : "N/A"}
+            </p>
+          </div>
 
-                  {/* Analysis Summary */}
+          {/* Graph Placeholder */}
+          <div className="bg-gray-200 rounded-lg p-8 flex items-center justify-center">
+            <span className="text-gray-500 text-lg font-medium">graph</span>
+          </div>
+
+          {/* Analysis Summary */}
           <div className="bg-slate-50 rounded-lg p-4">
             <h4 className="font-semibold text-slate-800 mb-2 flex items-center gap-2">
               <Brain className="w-4 h-4 text-blue-500" />

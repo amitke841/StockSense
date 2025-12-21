@@ -17,9 +17,9 @@ if missing_vars:
 # --- NLTK setup ---
 nltk.download('vader_lexicon', quiet=True)
 
-
+# --- StockInfo Superclass? ---
 class stockInfo:
-    def symbol_exists(self, symbol: str) -> bool:
+    def symbol_exists(self, symbol):
         """
         Returns True if ticker exposes a price, otherwise raises RuntimeError.
         """
@@ -31,7 +31,7 @@ class stockInfo:
             # unify to RuntimeError
             raise RuntimeError(f"Stock symbol '{symbol}' lookup failed: {e}") from e
 
-
+# --- Get Data from Reddit ---
 class redditPostData:
     def __init__(self):
         try:
@@ -85,7 +85,7 @@ class redditPostData:
 
         return pd.DataFrame(posts)
 
-
+# --- DataFrame Analysis ---
 class sentimentAnalysis:
     def __init__(self):
         try:
@@ -103,7 +103,7 @@ class sentimentAnalysis:
             'rekt': -3.5
         })
 
-    def predict_trend(self, posts_df: pd.DataFrame) -> float:
+    def predict_trend(self, posts_df):
         # return a float between -1 and 1 (or 0 if no useful posts)
         if posts_df is None or posts_df.empty:
             return 0.0
@@ -116,6 +116,7 @@ class sentimentAnalysis:
         if posts_df.empty:
             return 0.0
 
+        # Weighted Score
         def sentiment_row(row):
             title_score = self.sia.polarity_scores(row['title'])['compound']
             text_score = self.sia.polarity_scores(row['text'])['compound']
@@ -128,7 +129,7 @@ class sentimentAnalysis:
         total_weight = posts_df['weight'].sum()
         return (weighted_sum / total_weight) if total_weight != 0 else 0.0
 
-
+# --- Main method ---
 def get_stock_sentiment(stock_symbol: str) -> float:
     """
     Returns integer sentiment in range -100..100 on success.
@@ -140,7 +141,6 @@ def get_stock_sentiment(stock_symbol: str) -> float:
         stock_symbol = stock_symbol.upper().strip()
         info = stockInfo()
         if not info.symbol_exists(stock_symbol):
-            # symbol_exists raises RuntimeError on internal failure, but if it returns False we also raise
             raise RuntimeError(f"Stock symbol '{stock_symbol}' wasn't found.")
 
         reddit_data = redditPostData()
@@ -152,9 +152,5 @@ def get_stock_sentiment(stock_symbol: str) -> float:
         return round(sentiment * 100)  # integer in -100..100
 
     except Exception as e:
-        # unify printed error message and return numeric sentinel outside valid range
-        # ensure exception type is RuntimeError
-        if not isinstance(e, RuntimeError):
-            e = RuntimeError(str(e))
         print(f"[ERROR] {e}")
-        return e
+        return str(e)

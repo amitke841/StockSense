@@ -1,5 +1,6 @@
 from stockSentiment import get_stock_sentiment
 from stockData import get_stock_data
+from predictStock import train_or_predict
 import sys
 from colorama import Fore, Back, Style, init
 
@@ -12,14 +13,7 @@ else:
     exit(1)
 
 sentiment = (get_stock_sentiment(stock))
+prediction = (train_or_predict(stock))
 
-if sentiment == 999:
-    print(Fore.MAGENTA + "A")
-elif sentiment > 0: 
-    print(Fore.GREEN + f"Sentiment for {stock} is positive with a score of {sentiment}")
-elif sentiment < 0:
-    print(Fore.RED + f"Sentiment for {stock} is negative with a score of {sentiment}")
-else:
-    print(Fore.YELLOW + f"Sentiment for {stock} is neutral. (0)")
-    
+print(Fore.GREEN + f"Sentiment for {stock} is with a score of {sentiment}, prediction for 1 day: {prediction}")    
 print(get_stock_data(stock))

@@ -9,6 +9,8 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { analyzeStock as analyzeStockApi } from "@/api";
 import { getData as getDataApi } from "@/api";
+import { train as modelTrain } from "@/api";
+import { predict as modelPredict } from "@/api";
 
 import StockAnalysisCard from "../components/search/StockAnalysisCard";
 
@@ -19,6 +21,8 @@ export default function SearchPage() {
   const [error, setError] = useState(null);
   const [scoreResult, setScoreResult] = useState(null);
   const [stockData, setStockData] = useState(null);
+  const [predictValue, setPredictValue] = useState(null);
+
 
 
   const analyzeStock = async () => {
@@ -31,6 +35,7 @@ export default function SearchPage() {
     setError(null);
     setScoreResult(null);
     setStockData(null);
+    setPredictValue(null);
 
     try {
       // Run all API calls sequentially in one try block, STOCK DATA WITH STOCK SEN INSIDE, ONE FILE
@@ -39,6 +44,9 @@ export default function SearchPage() {
 
       const data = await getDataApi(searchQuery);
       setStockData(data);
+
+      const predictedValue = await modelPredict(searchQuery);
+      setPredictValue(predictedValue);      
 
       // let aiResult = await InvokeLLM({
       //   prompt: `Analyze the stock "${searchQuery}" and provide comprehensive investment analysis.
@@ -75,7 +83,8 @@ export default function SearchPage() {
         beta: data.beta,
         analysis_summary: data.summary,
         //change:
-        change_ps: data.changePS
+        change_ps: data.changePS,
+        prediction: predictedValue[0].predictions[0]
       };
 
       setAnalysisResult(result);
