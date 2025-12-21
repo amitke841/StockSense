@@ -10,7 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { analyzeStock as analyzeStockApi } from "@/api";
 import { getData as getDataApi } from "@/api";
 import { train as modelTrain } from "@/api";
-import { predict as modelPredict } from "@/api";
+import { predictStock as modelPredict } from "@/api";
 
 import StockAnalysisCard from "../components/search/StockAnalysisCard";
 

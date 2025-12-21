@@ -36,12 +36,13 @@ def train_or_predict(symbol: str):
     # 2. Train if needed
     if needs_training:
         print("Training is NEEDED")
-        client = Client("MLSpeech/StockSenseSpace")
+        client = Client("MLSpeech/StockSenseSpace", token=os.getenv('HF_TOKEN'))
         client.predict(
             symbol=symbol,
             api_name="/train",
-            hf_token=os.getenv('HF_TOKEN')
-        )
+            start=None,
+            end=None
+            )
 
         # testing
 
@@ -69,12 +70,11 @@ def train_or_predict(symbol: str):
 
     # 3. Predict
     print("PREDICTING...")
-    client = Client("MLSpeech/StockSenseSpace")
+    client = Client("MLSpeech/StockSenseSpace", token=os.getenv('HF_TOKEN'))
     prediction_result = client.predict(
         symbol=symbol,
         days=1,
-        api_name="/predict",
-        hf_token=os.getenv('HF_TOKEN')
+        api_name="/predict"
     )
 
     cursor.execute(
@@ -83,7 +83,7 @@ def train_or_predict(symbol: str):
         SET prediction = %s
         WHERE symbol = %s
         """,
-        (float(prediction_result), symbol)
+        (float(prediction_result["predictions"][0]), symbol)
     )
 
     conn.commit()
@@ -91,4 +91,4 @@ def train_or_predict(symbol: str):
     cursor.close()
     conn.close()
 
-    return prediction_result
+    return prediction_result["predictions"][0]
