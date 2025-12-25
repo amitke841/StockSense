@@ -1,5 +1,7 @@
 model change settings,
 LOCAL FILE ON MY COMPUTER GITIGNORE, clean project and modules from req.txt
+predicted value dont fit sentiment
+regularmarketprice to check, it may be the problem with not known stocks
 
 fix stock data
 ai model
@@ -11,9 +13,10 @@ confidence
 
 base44: add bar to change period, add more info, refresh button, add info panel for each data, add time stamp and if market open, sector on top, animation and bliking dot
 
+
 MOVE SUMMARY DOWN
 
-REST DRAW.io
+REST DRAW.io, database update every hour
 NEWS
 
 

@@ -15,6 +15,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { metricDefinitions } from './metricDefinitions'; 
+import StockChart from "@/components/StockChart"; // Adjust the import path as necessary
 
 const MetricItem = ({ label, value, format, onLabelClick }) => {
     const formattedValue = format ? format(value) : value;
@@ -193,9 +194,9 @@ export default function StockAnalysisCard({ analysisData }) {
                     </p>
                   </div>
 
-                  {/* Graph Placeholder */}
-                  <div className="bg-gray-200 rounded-lg p-8 flex items-center justify-center">
-                    <span className="text-gray-500 text-lg font-medium">graph</span>
+                  {/* Graph Component */}
+                  <div className="bg-white rounded-lg p-4">
+                    <StockChart />
                   </div>
 
                   {/* Analysis Summary */}

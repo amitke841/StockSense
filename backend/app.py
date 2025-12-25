@@ -2,6 +2,7 @@ from flask import Flask, request, jsonify
 from flask_cors import CORS
 from stockSentiment import get_stock_sentiment
 from stockData import get_stock_data
+from stockGraph import get_graph_data
 from predictStock import train_or_predict
 
 app = Flask(__name__)
@@ -31,6 +32,14 @@ def getStockData():
     if not stock_symbol:
         return jsonify({"error": "No stock symbol provided."})
     data = get_stock_data(stock_symbol)
+    return jsonify(data) 
+
+@app.route("/getstockgraphdata", methods=["POST"])
+def getStockGraphData():
+    stock_symbol = request.form.get("stock_symbol", "")
+    if not stock_symbol:
+        return jsonify({"error": "No stock symbol provided."})
+    data = get_graph_data(stock_symbol)
     return jsonify(data) 
 
 @app.route("/predict", methods=["POST"])

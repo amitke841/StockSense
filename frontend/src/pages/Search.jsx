@@ -9,7 +9,6 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { analyzeStock as analyzeStockApi } from "@/api";
 import { getData as getDataApi } from "@/api";
-import { train as modelTrain } from "@/api";
 import { predictStock as modelPredict } from "@/api";
 
 import StockAnalysisCard from "../components/search/StockAnalysisCard";
@@ -84,7 +83,7 @@ export default function SearchPage() {
         analysis_summary: data.summary,
         //change:
         change_ps: data.changePS,
-        prediction: predictedValue[0].predictions[0]
+        prediction: predictedValue.prediction
       };
 
       setAnalysisResult(result);

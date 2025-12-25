@@ -1,6 +1,7 @@
 from stockSentiment import get_stock_sentiment
 from stockData import get_stock_data
 from predictStock import train_or_predict
+from stockGraph import get_graph_data
 import sys
 from colorama import Fore, Back, Style, init
 
@@ -12,8 +13,10 @@ else:
     print("No variable provided")
     exit(1)
 
-sentiment = (get_stock_sentiment(stock))
+# sentiment = (get_stock_sentiment(stock))
+graph_data = (get_graph_data(stock))
 prediction = (train_or_predict(stock))
 
-print(Fore.GREEN + f"Sentiment for {stock} is with a score of {sentiment}, prediction for 1 day: {prediction}")    
+print(graph_data)
+print(Fore.GREEN + f"Sentiment for {stock} is with a score of ###, prediction for 1 day: {prediction}") 
 print(get_stock_data(stock))
