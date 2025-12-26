@@ -2,27 +2,42 @@ from datetime import datetime, timedelta
 import yfinance as yf
 from predictStock import train_or_predict
 
+
 def get_graph_data(ticker: str) -> dict:
     today = datetime.utcnow().date()
     today_str = today.isoformat()
 
     stock = yf.Ticker(ticker)
 
-    # We need enough history to cover the range
-    hist = stock.history(period="15d", interval="1d")
-
-    result = {}
+    # Pull extra history to handle weekends/holidays
+    hist = stock.history(period="30d", interval="1d")
 
     # Convert historical data to date -> close
     hist_map = {
         d.date(): round(float(row["Close"]), 2)
         for d, row in hist.iterrows()
+        if row["Close"] is not None
     }
 
-    # Build exactly 8 calendar days back (including today)
-    start_date = today - timedelta(days=8)
-    current_date = start_date
+    if not hist_map:
+        raise ValueError("No historical data available")
 
+    # Walk backwards day-by-day until we collect 8 valid trading days
+    valid_days = 0
+    cursor = today
+
+    while valid_days < 6:
+        if cursor in hist_map:
+            valid_days += 1
+        cursor -= timedelta(days=1)
+
+    # cursor is now one day BEFORE the start
+    start_date = cursor + timedelta(days=1)
+
+    result = {}
+
+    # Fill ALL calendar days between start_date and today
+    current_date = start_date
     while current_date <= today:
         result[current_date.isoformat()] = hist_map.get(current_date)
         current_date += timedelta(days=1)

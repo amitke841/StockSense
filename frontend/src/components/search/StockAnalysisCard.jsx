@@ -191,15 +191,6 @@ export default function StockAnalysisCard({ analysisData }) {
                     <StockChart apiData={analysisData.graphData} />
                   </div>
 
-                  {/* Analysis Summary */}
-                    <div className="bg-slate-50 rounded-lg p-4">
-            <h4 className="font-semibold text-slate-800 mb-2 flex items-center gap-2">
-              <Brain className="w-4 h-4 text-blue-500" />
-              {analysisData.symbol} Info
-            </h4>
-            <p className="text-slate-700">{analysisData.analysis_summary}</p>
-          </div>
-
           <div className="grid md:grid-cols-2 gap-6">
             <div>
               <h4 className="font-semibold text-slate-800 mb-3">Core Price Metrics</h4>
@@ -228,6 +219,15 @@ export default function StockAnalysisCard({ analysisData }) {
                 <MetricItem label="Beta" value={analysisData?.beta?.toFixed(2)} onLabelClick={handleShowInfo} />
               </div>
             </div>
+          </div>
+
+          {/* Analysis Summary */}
+                    <div className="bg-slate-50 rounded-lg p-4">
+            <h4 className="font-semibold text-slate-800 mb-2 flex items-center gap-2">
+              <Brain className="w-4 h-4 text-blue-500" />
+              {analysisData.symbol} Info
+            </h4>
+            <p className="text-slate-700">{analysisData.analysis_summary}</p>
           </div>
 
           <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg p-4">

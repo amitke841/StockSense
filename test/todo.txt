@@ -1,7 +1,9 @@
 model change settings,
 LOCAL FILE ON MY COMPUTER GITIGNORE, clean project and modules from req.txt
 predicted value dont fit sentiment
-regularmarketprice to check, it may be the problem with not known stocks
+regularmarketprice to check, it may be the problem with not known stocks, all the same
+add prediction indicator on graph but also above
+testing
 
 fix stock data
 ai model
