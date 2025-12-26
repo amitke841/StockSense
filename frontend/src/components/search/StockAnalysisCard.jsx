@@ -15,7 +15,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { metricDefinitions } from './metricDefinitions'; 
-import StockChart from "@/components/StockChart"; // Adjust the import path as necessary
+import StockChart from "@/components/search/StockChart"; // Adjust the import path as necessary
 
 const MetricItem = ({ label, value, format, onLabelClick }) => {
     const formattedValue = format ? format(value) : value;
@@ -186,17 +186,9 @@ export default function StockAnalysisCard({ analysisData }) {
                 </CardHeader>
 
                 <CardContent className="space-y-6">
-                  {/* Prediction Value */}
-                  <div className="bg-slate-50 rounded-lg p-4">
-                    <h4 className="font-semibold text-slate-800 mb-2">Predicted Value</h4>
-                    <p className="text-slate-700 text-lg">
-                      {analysisData.prediction ? `$${analysisData.prediction.toFixed(2)}` : "N/A"}
-                    </p>
-                  </div>
-
                   {/* Graph Component */}
                   <div className="bg-white rounded-lg p-4">
-                    <StockChart />
+                    <StockChart apiData={analysisData.graphData} />
                   </div>
 
                   {/* Analysis Summary */}

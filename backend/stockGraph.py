@@ -3,30 +3,31 @@ import yfinance as yf
 from predictStock import train_or_predict
 
 def get_graph_data(ticker: str) -> dict:
-    """
-    Returns a dictionary in the API format:
-    - past 6 calendar days (filled from history)
-    - today (from ticker.info current price)
-    - tomorrow (prediction)
-    """
     today = datetime.utcnow().date()
     today_str = today.isoformat()
 
     stock = yf.Ticker(ticker)
 
-    # Get historical closes (past days)
-    hist = stock.history(period="10d", interval="1d")
-
-    # Take last available trading days
-    hist = hist.tail(6)
+    # We need enough history to cover the range
+    hist = stock.history(period="15d", interval="1d")
 
     result = {}
 
-    for date, row in hist.iterrows():
-        date_str = date.date().isoformat()
-        result[date_str] = round(float(row["Close"]), 2)
+    # Convert historical data to date -> close
+    hist_map = {
+        d.date(): round(float(row["Close"]), 2)
+        for d, row in hist.iterrows()
+    }
 
-    # Get current price from ticker.info
+    # Build exactly 8 calendar days back (including today)
+    start_date = today - timedelta(days=8)
+    current_date = start_date
+
+    while current_date <= today:
+        result[current_date.isoformat()] = hist_map.get(current_date)
+        current_date += timedelta(days=1)
+
+    # Get current price (overwrite today's value)
     info = stock.info
     current_price = (
         info.get("regularMarketPrice")
@@ -42,6 +43,6 @@ def get_graph_data(ticker: str) -> dict:
     # Predict tomorrow
     tomorrow = today + timedelta(days=1)
     prediction = train_or_predict(ticker)
-    result[tomorrow.isoformat()] = prediction
+    result[tomorrow.isoformat()] = round(prediction, 2)
 
     return result
