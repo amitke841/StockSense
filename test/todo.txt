@@ -1,26 +1,14 @@
-model change settings,
-LOCAL FILE ON MY COMPUTER GITIGNORE, clean project and modules from req.txt
-predicted value dont fit sentiment
-regularmarketprice to check, it may be the problem with not known stocks, all the same
-add prediction indicator on graph but also above
+all pages + the REST on DRAW.io, database update every hour
+favorites/trending
+market open/close
+base44 addition
+
+add options to view stock predictions with fast info, regularmarketprice to check, it may be the problem with not known stocks, all the same
 testing
-
-fix stock data
-ai model
-sentiment upgrade - more sites, with confidence, -if low he- fix himself, my own nltk
-some symbols dont work - but they are on yahoo finance site
-graph
-if someone of them dont work, just fill with --
-confidence
-
-base44: add bar to change period, add more info, refresh button, add info panel for each data, add time stamp and if market open, sector on top, animation and bliking dot
+PREDICT FEW NEXT DAYS
 
 
-MOVE SUMMARY DOWN
-
-REST DRAW.io, database update every hour
-NEWS
-
-
-ENV token hf, env reddit add to secret group
-when app is waiting for server write it
+set which http can use my api key rss2json
+ניתן לקבל עוד מניות כמו מניות ישראליות בבקשת http ישירה ל yahooFinance אך בפרוייקט זה אתמקד במניות העיקריות עם ספריה בפייתון.
+לצורך הפשטות, משתמש ברדיט
+חישוב ביטחון, ואז הורדה/עלייה של החישוב אם לא מותאם לירידה/עלייה של הפרדיקציה

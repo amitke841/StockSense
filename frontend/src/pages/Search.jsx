@@ -12,15 +12,16 @@ import { getData as getDataApi } from "@/api";
 import { getGraphData } from "@/api";
 
 import StockAnalysisCard from "../components/search/StockAnalysisCard";
+import { calculateConfidence } from "../utils/confidence";
 
 export default function SearchPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [analysisResult, setAnalysisResult] = useState(null); // Renamed for clarity
   const [error, setError] = useState(null);
-  const [scoreResult, setScoreResult] = useState(null);
-  const [stockData, setStockData] = useState(null);
-  const [graphData, setGraphData] = useState(null);
+  // const [scoreResult, setScoreResult] = useState(null);
+  // const [stockData, setStockData] = useState(null);
+  // const [graphData, setGraphData] = useState(null);
 
 
 
@@ -32,36 +33,31 @@ export default function SearchPage() {
     setIsAnalyzing(true);
     setAnalysisResult(null);
     setError(null);
-    setScoreResult(null);
-    setStockData(null);
-    setGraphData(null);
+    // setScoreResult(null);
+    // setStockData(null);
+    // setGraphData(null);
 
     try {
       // Run all API calls sequentially in one try block, STOCK DATA WITH STOCK SEN INSIDE, ONE FILE
       const score = await analyzeStockApi(searchQuery);
-      setScoreResult(score);
+      // setScoreResult(score);
 
       const data = await getDataApi(searchQuery);
-      setStockData(data);
+      // setStockData(data);
 
       const dataForGraph = await getGraphData(searchQuery);
-      setGraphData(dataForGraph);      
+      // setGraphData(dataForGraph);      
 
-      // let aiResult = await InvokeLLM({
-      //   prompt: `Analyze the stock "${searchQuery}" and provide comprehensive investment analysis.
-      //   Be thorough and provide actionable insights.`,
-      //   add_context_from_internet: true,
-      //   response_json_schema: {
-      //     type: "object",
-      //     properties: {
-      //     analysis_summary: { type: "string" }}
-      //   }
-      // });
+      console.log(score.confidence)
+      console.log(dataForGraph)
+      console.log(score.sentiment)
+
+      const confidence = await calculateConfidence(score.confidence, dataForGraph, score.sentiment);
 
       const result = {
-        // ...aiResult,
         symbol: score.stock_symbol.toUpperCase(),
         score: score.sentiment,
+        confidence: confidence,
         company_name: data.longName,
         current_price: data.currentPrice,
         open: data.open,
@@ -85,6 +81,8 @@ export default function SearchPage() {
         change_ps: data.changePS,
         graphData: dataForGraph // Added graphData here
       };
+
+      console.log(result);
 
       setAnalysisResult(result);
 

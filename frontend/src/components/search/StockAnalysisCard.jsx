@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { TrendingUp, TrendingDown, AlertTriangle, CheckCircle, Target, Brain, Star, Info } from 'lucide-react';import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { TrendingUp, TrendingDown, AlertTriangle, CheckCircle, Target, Brain, Star, Info, BadgeCheck, MessageSquareQuote } from 'lucide-react';import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
@@ -15,7 +15,9 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { metricDefinitions } from './metricDefinitions'; 
-import StockChart from "@/components/search/StockChart"; // Adjust the import path as necessary
+import StockChart from "@/components/search/StockChart";
+import StockNews from "@/components/search/StockNews";
+
 
 const MetricItem = ({ label, value, format, onLabelClick }) => {
     const formattedValue = format ? format(value) : value;
@@ -181,6 +183,10 @@ export default function StockAnalysisCard({ analysisData }) {
                     </div>
                     </div>
                     <p className="text-xs text-slate-600 mt-2">{analysisData.symbol} Score</p>
+                    <div className="flex items-center gap-1 text-xs text-slate-600 mt-1">
+                    <BadgeCheck className="w-4 h-4 text-blue-500" />
+                    <span>Confidence: {(analysisData.confidence * 100).toFixed(0)}%</span>
+                    </div>
                   </div>
                   </div>
                 </CardHeader>
@@ -221,16 +227,21 @@ export default function StockAnalysisCard({ analysisData }) {
             </div>
           </div>
 
+          {/* Stock News Component */}
+            <div className="bg-white rounded-lg p-4">
+              <StockNews symbol={analysisData.symbol} />
+            </div>
+
           {/* Analysis Summary */}
                     <div className="bg-slate-50 rounded-lg p-4">
             <h4 className="font-semibold text-slate-800 mb-2 flex items-center gap-2">
-              <Brain className="w-4 h-4 text-blue-500" />
+              <MessageSquareQuote className="w-4 h-4 text-blue-500" />
               {analysisData.symbol} Info
             </h4>
-            <p className="text-slate-700">{analysisData.analysis_summary}</p>
+            <p className="text-[14px] text-slate-700">{analysisData.analysis_summary}</p>
           </div>
 
-          <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg p-4">
+          {/* <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg p-4">
             <h4 className="font-semibold text-slate-800 mb-3 flex items-center gap-2">
               <Target className="w-4 h-4 text-blue-500" />
               Investment Strength
@@ -246,7 +257,7 @@ export default function StockAnalysisCard({ analysisData }) {
                 style={{ left: `${((analysisData.score + 100) / 200) * 100}%` }}
               ></div>
             </div>
-          </div>
+          </div> */}
         </CardContent>
       </Card>
       <AlertDialog open={infoAlert.open} onOpenChange={(open) => setInfoAlert({ ...infoAlert, open })}>
