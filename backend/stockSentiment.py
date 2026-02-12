@@ -3,9 +3,11 @@ import nltk
 import praw
 import yfinance as yf
 import pandas as pd
+import numpy as np
 from nltk.sentiment import SentimentIntensityAnalyzer
 from dotenv import load_dotenv
 import itertools
+from abc import ABC, abstractmethod
 
 # --- Load environment variables ---
 load_dotenv()
@@ -17,22 +19,28 @@ if missing_vars:
 # --- NLTK setup ---
 nltk.download('vader_lexicon', quiet=True)
 
-# --- StockInfo Superclass? ---
-class stockInfo:
+# --- StockInfo ---
+class StockInfo:
     def symbol_exists(self, symbol):
-        """
-        Returns True if ticker exposes a price, otherwise raises RuntimeError.
-        """
         try:
             ticker = yf.Ticker(symbol)
             price = ticker.info.get("currentPrice")
             return price is not None
         except Exception as e:
-            # unify to RuntimeError
             raise RuntimeError(f"Stock symbol '{symbol}' lookup failed: {e}") from e
 
-# --- Get Data from Reddit ---
-class redditPostData:
+# --- Interface ---
+class DataFetcher(ABC):
+    @abstractmethod
+    def fetch_data(self, stock: str, time_period: str):
+        pass
+    
+    @abstractmethod
+    def data_to_DF(self, stock_symbol: str) -> pd.DataFrame:
+        pass
+
+# --- Reddit Fetcher ---
+class RedditPostData(DataFetcher):
     def __init__(self):
         try:
             self.reddit = praw.Reddit(
@@ -43,7 +51,7 @@ class redditPostData:
         except Exception as e:
             raise RuntimeError(f"Failed to initialize Reddit client: {e}") from e
 
-    def get_submissions(self, stock: str, time_period: str):
+    def fetch_data(self, stock: str, time_period: str):
         try:
             listing = self.reddit.subreddit("stocks+investing+wallstreetbets").search(
                 f"{stock} stock", limit=100, sort="hot", time_filter=time_period
@@ -55,19 +63,18 @@ class redditPostData:
         except Exception as e:
             raise RuntimeError(f"Failed to fetch submissions for {stock} ({time_period}): {e}") from e
 
-    def get_posts(self, stock_symbol: str) -> pd.DataFrame:
+    def data_to_DF(self, stock_symbol: str) -> pd.DataFrame:
         posts = []
         print("Starting to extract posts...")
-        # try time windows in descending freshness
+
         for period in ["day", "week", "month", "year"]:
             print(f"extracting posts for: {period}")
-            submissions = self.get_submissions(stock_symbol, period)
+            submissions = self.fetch_data(stock_symbol, period)
             if submissions:
                 break
             else:
                 print("Resuming search with larger period...")
         else:
-            # no submissions found in any window -> raise runtime error
             raise RuntimeError(f"No Reddit posts found for '{stock_symbol}' in the past year.")
 
         for post in submissions:
@@ -78,22 +85,23 @@ class redditPostData:
                     "score": getattr(post, "score", 0) or 0,
                     "created_utc": getattr(post, "created_utc", None)
                 })
-            except Exception as inner_e:
+            except Exception:
                 # skip malformed post but continue processing others
-                print(f"Skipping a post due to inner error: {inner_e}")
                 continue
 
         return pd.DataFrame(posts)
 
-# --- DataFrame Analysis ---
-class sentimentAnalysis:
+# --- Sentiment Analysis ---
+class SentimentAnalysis:
     def __init__(self):
         try:
             self.sia = SentimentIntensityAnalyzer()
         except Exception as e:
             raise RuntimeError(f"Failed to initialize SentimentIntensityAnalyzer: {e}") from e
 
-        # extend lexicon
+        self.last_df = None
+
+        # extend lexicon, examples
         self.sia.lexicon.update({
             'bagholder': -3.0,
             'scam': -4.0,
@@ -103,8 +111,9 @@ class sentimentAnalysis:
             'rekt': -3.5
         })
 
+    # ---- Trend Score ----
     def predict_trend(self, posts_df):
-        # return a float between -1 and 1 (or 0 if no useful posts)
+
         if posts_df is None or posts_df.empty:
             return 0.0
 
@@ -112,45 +121,90 @@ class sentimentAnalysis:
         posts_df['text'] = posts_df['text'].fillna('')
         posts_df['content'] = posts_df['title'] + " " + posts_df['text']
 
-        posts_df = posts_df[posts_df['content'].str.len() > 5]
+        posts_df = posts_df[posts_df['content'].str.len() > 5] # remove short posts
         if posts_df.empty:
             return 0.0
 
-        # Weighted Score
         def sentiment_row(row):
             title_score = self.sia.polarity_scores(row['title'])['compound']
             text_score = self.sia.polarity_scores(row['text'])['compound']
             return (0.7 * title_score) + (0.3 * text_score)
 
         posts_df['sentiment'] = posts_df.apply(sentiment_row, axis=1)
-        posts_df['weight'] = posts_df['score'] + 1  # avoid zero weight
+        posts_df['weight'] = posts_df['score'] + 1 # avoid zero weight
 
         weighted_sum = (posts_df['sentiment'] * posts_df['weight']).sum()
         total_weight = posts_df['weight'].sum()
-        return (weighted_sum / total_weight) if total_weight != 0 else 0.0
+        trend = (weighted_sum / total_weight) if total_weight != 0 else 0.0 
 
-# --- Main method ---
-def get_stock_sentiment(stock_symbol: str) -> float:
+        self.last_df = posts_df
+        return trend
+
+    # ---- Confidence Score ----
+    def confidence_score(self) -> float:
+
+        posts_df = self.last_df
+        if posts_df is None or posts_df.empty or 'sentiment' not in posts_df:
+            return 0.0
+
+        n = len(posts_df)
+
+        # volume confidence
+        volume_score = min(1.0, np.log10(n + 1) / 2.3)
+
+        # agreement confidence (variance)
+        variance = posts_df['sentiment'].var()
+        agreement_score = 1 / (1 + variance * 5)
+
+        # vote confidence
+        avg_upvotes = posts_df['score'].mean()
+        vote_score = min(1.0, np.log10(avg_upvotes + 1) / 2)
+
+        # strength confidence
+        avg_sentiment = abs(posts_df['sentiment'].mean())
+        strength_score = min(1.0, avg_sentiment * 1.5)
+
+        confidence = (
+            0.35 * volume_score +
+            0.30 * agreement_score +
+            0.20 * vote_score +
+            0.15 * strength_score
+        )
+
+        return float(round(confidence, 3))
+
+# --- Main API ---
+def get_stock_sentiment(stock_symbol: str):
     """
-    Returns integer sentiment in range -100..100 on success.
-    On error, returns float('nan') and prints a unified RuntimeError message.
-    All underlying errors are raised as RuntimeError, but this function catches them
-    and returns the numeric sentinel float('nan') so callers always receive a numeric result.
+    Returns:
+    {
+        "sentiment": -100..100,
+        "confidence": 0.0..1.0
+    }
     """
+
     try:
         stock_symbol = stock_symbol.upper().strip()
-        info = stockInfo()
+
+        info = StockInfo()
         if not info.symbol_exists(stock_symbol):
             raise RuntimeError(f"Stock symbol '{stock_symbol}' wasn't found.")
 
-        reddit_data = redditPostData()
-        posts_df = reddit_data.get_posts(stock_symbol)
+        reddit_data = RedditPostData() #DataFetcher
+        posts_df = reddit_data.data_to_DF(stock_symbol)
 
-        analyzer = sentimentAnalysis()
-        sentiment = analyzer.predict_trend(posts_df)  # -1.0 .. 1.0
-        print(f"SUCCEED. result for {stock_symbol} is {sentiment*100}")
-        return round(sentiment * 100)  # integer in -100..100
+        analyzer = SentimentAnalysis()
+        sentiment = analyzer.predict_trend(posts_df)
+        confidence = analyzer.confidence_score()
+
+        result = {
+            "sentiment": round(sentiment * 100),
+            "confidence": confidence
+        }
+
+        print(f"SUCCEED {stock_symbol} → {result}")
+        return result
 
     except Exception as e:
         print(f"[ERROR] {e}")
-        return str(e)
+        return {"error": str(e)}

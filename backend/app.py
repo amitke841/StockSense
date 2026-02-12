@@ -18,13 +18,15 @@ def getStockSentiment():
     if not stock_symbol:
         return jsonify({"error": "No stock symbol provided."})
     
-    sentiment = get_stock_sentiment(stock_symbol)
-    if (sentiment > -100 and sentiment <100):
-        return jsonify({
-            "stock_symbol": stock_symbol,
-            "sentiment": sentiment
-        })
-    else: return jsonify({"error": sentiment})
+    sentiment_data = get_stock_sentiment(stock_symbol)
+    if "error" in sentiment_data:
+        return jsonify({"error": sentiment_data["error"]})
+    
+    return jsonify({
+        "stock_symbol": stock_symbol,
+        "sentiment": sentiment_data["sentiment"],
+        "confidence": sentiment_data["confidence"]
+    })
     
 @app.route("/getstockdata", methods=["POST"])
 def getStockData():

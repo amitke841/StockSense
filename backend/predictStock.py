@@ -21,6 +21,19 @@ def train_or_predict(symbol: str):
     )
     row = cursor.fetchone()
 
+    # ✅ If already predicted today, return stored prediction immediately
+    if (
+        row is not None
+        and row["prediction"] is not None
+        and row["last_trained"] is not None
+        and row["last_trained"].date() == date.today()
+    ):
+        prediction_value = float(row["prediction"])
+        cursor.close()
+        conn.close()
+        return prediction_value
+
+    # 2. Decide if training is needed
     needs_training = False
 
     if row is None:
@@ -33,18 +46,16 @@ def train_or_predict(symbol: str):
         elif row["last_trained"].date() != date.today():
             needs_training = True
 
-    # 2. Train if needed
+    # 3. Train if needed
     if needs_training:
         print("Training is NEEDED")
-        client = Client("MLSpeech/StockSenseSpace", token=os.getenv('HF_TOKEN'))
+        client = Client("MLSpeech/StockSenseSpace", token=os.getenv("HF_TOKEN"))
         client.predict(
             symbol=symbol,
             api_name="/train",
             start=None,
             end=None
-            )
-
-        # testing
+        )
 
         now = datetime.now()
 
@@ -68,14 +79,16 @@ def train_or_predict(symbol: str):
 
         conn.commit()
 
-    # 3. Predict
+    # 4. Predict (only if we didn't already have today's prediction)
     print("PREDICTING...")
-    client = Client("MLSpeech/StockSenseSpace", token=os.getenv('HF_TOKEN'))
+    client = Client("MLSpeech/StockSenseSpace", token=os.getenv("HF_TOKEN"))
     prediction_result = client.predict(
         symbol=symbol,
         days=1,
         api_name="/predict"
     )
+
+    prediction_value = float(prediction_result["predictions"][0])
 
     cursor.execute(
         """
@@ -83,7 +96,7 @@ def train_or_predict(symbol: str):
         SET prediction = %s
         WHERE symbol = %s
         """,
-        (float(prediction_result["predictions"][0]), symbol)
+        (prediction_value, symbol)
     )
 
     conn.commit()
@@ -91,4 +104,4 @@ def train_or_predict(symbol: str):
     cursor.close()
     conn.close()
 
-    return prediction_result["predictions"][0]
+    return prediction_value

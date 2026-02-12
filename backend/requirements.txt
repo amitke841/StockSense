@@ -9,8 +9,6 @@ flask==3.1.1
 yfinance==0.2.65
 flask-cors==6.0.1
 gunicorn==23.0.0
-flask-cors==6.0.1
-gunicorn==23.0.0
 mysql-connector-python==9.5.0
 datetime==6.0
 gradio_client==2.0.2
