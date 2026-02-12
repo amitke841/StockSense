@@ -68,26 +68,32 @@ class RedditPostData(DataFetcher):
         print("Starting to extract posts...")
 
         for period in ["day", "week", "month", "year"]:
-            print(f"extracting posts for: {period}")
+            print(f"Extracting posts for: {period}")
             submissions = self.fetch_data(stock_symbol, period)
             if submissions:
-                break
-            else:
-                print("Resuming search with larger period...")
-        else:
-            raise RuntimeError(f"No Reddit posts found for '{stock_symbol}' in the past year.")
+                for post in submissions:
+                    try:
+                        posts.append({
+                            "title": getattr(post, "title", "") or "",
+                            "text": getattr(post, "selftext", "") or "",
+                            "score": getattr(post, "score", 0) or 0,
+                            "created_utc": getattr(post, "created_utc", None)
+                        })
+                    except Exception:
+                        # Skip malformed posts but continue processing others
+                        continue
 
-        for post in submissions:
-            try:
-                posts.append({
-                    "title": getattr(post, "title", "") or "",
-                    "text": getattr(post, "selftext", "") or "",
-                    "score": getattr(post, "score", 0) or 0,
-                    "created_utc": getattr(post, "created_utc", None)
-                })
-            except Exception:
-                # skip malformed post but continue processing others
-                continue
+                    # Stop fetching if we have at least 2 posts
+                    if len(posts) >= 2:
+                        break
+
+                if len(posts) >= 2:
+                    break
+            else:
+                print("Resuming search with a larger period...")
+
+        if len(posts) < 2:
+            raise RuntimeError(f"Insufficient Reddit posts found for '{stock_symbol}'. At least 2 posts are required.")
 
         return pd.DataFrame(posts)
 
