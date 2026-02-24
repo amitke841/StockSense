@@ -48,7 +48,7 @@ def getStockGraphData():
 @app.route("/getpopularstocks", methods=["GET"])
 def getPopularStocks():
     data = get_popular_json()
-    return data
+    return jsonify(data)
 
 @app.route("/predict", methods=["POST"])
 def predict():

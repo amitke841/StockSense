@@ -1,7 +1,6 @@
 from dbConnection import get_db_connection
 from stockSentiment import get_stock_sentiment
 from stockData import get_stock_data
-import json
 
 popular_symbols = ["AAPL", "MSFT", "NVDA", "GOOGL", "AMZN", "META", "TSLA", "AMD"]
 
@@ -53,7 +52,7 @@ def get_popular_json(limit=8):
         }
         stocks_list.append(stock)
 
-    return json.dumps(stocks_list, indent=2)
+    return stocks_list
     
     
 if (__name__ == "__main__"):
