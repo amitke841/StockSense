@@ -1,7 +1,14 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Search, TrendingUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Command, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
+import {
+  Command,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
 const popularStocks = ["AAPL", "TSLA", "NVDA", "MSFT", "GOOGL", "AMZN", "META", "NFLX"];
@@ -9,6 +16,7 @@ const popularStocks = ["AAPL", "TSLA", "NVDA", "MSFT", "GOOGL", "AMZN", "META", 
 export default function QuickSearch({ onSearch }) {
   const [open, setOpen] = useState(false);
   const [value, setValue] = useState("");
+  const navigate = useNavigate();
 
   const runSearch = (rawSymbol) => {
     const symbol = (rawSymbol || "").trim().toUpperCase();
@@ -16,8 +24,12 @@ export default function QuickSearch({ onSearch }) {
 
     setValue(symbol);
     setOpen(false);
+
+    // Trigger callback if provided
     onSearch?.(symbol);
-    window.location.href = `/search?symbol=${encodeURIComponent(symbol)}`;
+
+    // Use React Router navigation instead of window.location.href
+    navigate(`/Search?symbol=${encodeURIComponent(symbol)}`);
   };
 
   return (
@@ -39,6 +51,7 @@ export default function QuickSearch({ onSearch }) {
 
       <PopoverContent className="w-64 p-0">
         <Command>
+          {/* Input */}
           <div className="relative border-b p-2">
             <CommandInput
               placeholder="Search stocks..."
@@ -63,6 +76,7 @@ export default function QuickSearch({ onSearch }) {
             </Button>
           </div>
 
+          {/* Popular Stocks */}
           <CommandList>
             <CommandGroup heading="Popular Stocks">
               {popularStocks.map((stock) => (

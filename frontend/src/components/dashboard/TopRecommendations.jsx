@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { TrendingUp, TrendingDown, Star, ExternalLink } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -11,12 +12,12 @@ import { getPopularStocks } from "@/api";
 export default function TopRecommendations({ title }) {
   const [stocks, setStocks] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const navigate = useNavigate(); 
 
   useEffect(() => {
     async function fetchStocks() {
       try {
         const data = await getPopularStocks();
-        console.log(data)
         setStocks(data);
       } catch (err) {
         console.error(err);
@@ -40,6 +41,11 @@ export default function TopRecommendations({ title }) {
     if (score > 20) return "bg-yellow-50 border-yellow-200";
     if (score > -20) return "bg-gray-50 border-gray-200";
     return "bg-red-50 border-red-200";
+  };
+
+  const handleNavigate = (symbol) => {
+    if (!symbol) return;
+    navigate(`/Search?symbol=${encodeURIComponent(symbol)}`); 
   };
 
   if (isLoading) {
@@ -95,9 +101,7 @@ export default function TopRecommendations({ title }) {
                   <Button
                     variant="ghost"
                     size="icon"
-                    onClick={() =>
-                      (window.location.href = `/StockSense/search?symbol=${encodeURIComponent(stock.symbol)}`)
-                    }
+                    onClick={() => handleNavigate(stock.symbol)} 
                     className="h-7 w-7 p-0 text-blue-600 hover:text-blue-700 hover:bg-transparent"
                   >
                     <ExternalLink className="w-4 h-4" />
@@ -108,16 +112,6 @@ export default function TopRecommendations({ title }) {
                   <span className="font-semibold text-slate-800">
                     ${stock.current_price?.toFixed(2)}
                   </span>
-                  {/* <div className="flex items-center gap-1">
-                    {stock.price_change >= 0 ? (
-                      <TrendingUp className="w-3 h-3 text-green-500" />
-                    ) : (
-                      <TrendingDown className="w-3 h-3 text-red-500" />
-                    )}
-                    <span className={stock.price_change >= 0 ? "text-green-600" : "text-red-600"}>
-                      {stock.price_change_percent?.toFixed(1)}%
-                    </span>
-                  </div> */}
                 </div>
               </div>
               <div className="text-right">
@@ -138,16 +132,6 @@ export default function TopRecommendations({ title }) {
                 className={`h-2 ${stock.sentiment > 0 ? "text-green-500" : "text-red-500"}`}
               />
             </div>
-
-            {/* <div className="flex items-center justify-between">
-              <div className="flex gap-2">
-                <Badge className="text-xs bg-blue-100 text-blue-700">{stock.reddit_mentions} Reddit</Badge>
-                <Badge className="text-xs bg-purple-100 text-purple-700">{stock.twitter_sentiment}</Badge>
-              </div>
-              <Button variant="ghost" size="sm" className="text-blue-600 hover:text-blue-800">
-                <ExternalLink className="w-4 h-4" />
-              </Button>
-            </div> */}
           </motion.div>
         ))}
       </CardContent>
