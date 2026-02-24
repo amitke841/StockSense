@@ -5,6 +5,7 @@ from stockData import get_stock_data
 from stockGraph import get_graph_data
 from predictStock import train_or_predict
 from popularSymbols import get_popular_stocks
+from marketStatus import get_market_status
 
 app = Flask(__name__)
 CORS(app)
@@ -48,6 +49,11 @@ def getStockGraphData():
 @app.route("/getpopularstocks", methods=["GET"])
 def getPopularStocks():
     data = get_popular_stocks()
+    return jsonify(data)
+
+@app.route("/getmarketstatus", methods=["GET"])
+def getMarketStatus():
+    data = get_market_status()
     return jsonify(data)
 
 @app.route("/predict", methods=["POST"])
