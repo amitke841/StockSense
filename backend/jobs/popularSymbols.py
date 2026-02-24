@@ -1,7 +1,6 @@
-
-from dbConnection import get_db_connection
-from stockSentiment import get_stock_sentiment
-from stockData import get_stock_data
+from backend.dbConnection import get_db_connection
+from backend.stockSentiment import get_stock_sentiment
+from backend.stockData import get_stock_data
 
 popular_symbols = ["AAPL", "MSFT", "NVDA", "GOOGL", "AMZN", "META", "TSLA", "AMD"]
 
