@@ -26,17 +26,15 @@ def update_sentiments():
         cursor.close()
         conn.close()
         
-    def get_popular_stocks():
-        import json
 
-def get_popular_json(limit=8):
+def get_popular_stocks(limit=8):
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
 
     query = """
         SELECT symbol, name, sentiment, price
-        FROM stocks
-        ORDER BY recommendation_score DESC
+        FROM Daily_Sen
+        ORDER BY sentiment DESC
         LIMIT %s
     """
     cursor.execute(query, (limit,))
@@ -56,4 +54,5 @@ def get_popular_json(limit=8):
     
     
 if (__name__ == "__main__"):
-    update_sentiments()
+    print(get_popular_stocks())
+    # update_sentiments()
