@@ -1,11 +1,17 @@
-# Dockerfile
+# Dockerfile בתוך backend/jobs/
 FROM python:3.11-slim
 
 WORKDIR /app
 
-# COPY requirements.txt .
-# RUN pip install -r requirements.txt
+# העתק requirements (מ-root או subfolder בהתאם)
+COPY ../../requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
 
-COPY . .
+# העתק את כל הקוד של backend
+COPY ../.. .
 
-CMD ["python", "popularSymbols.py"]
+# הוסף backend ל-PYTHONPATH
+ENV PYTHONPATH=/app/backend
+
+# הפקודה שתופעל
+CMD ["python", "backend/jobs/update_sentiments.py"]
