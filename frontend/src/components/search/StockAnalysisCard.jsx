@@ -140,9 +140,6 @@ export default function StockAnalysisCard({ analysisData }) {
             <div>
               <CardTitle className="text-2xl font-bold text-slate-800 mb-1">
                 {analysisData.symbol}
-                <Button variant="ghost" size="icon" onClick={toggleWatchlist} className="ml-2">
-                  <Star className={`w-6 h-6 text-yellow-400 ${isWatched ? 'fill-yellow-400' : ''}`} />
-                </Button>
               </CardTitle>
               <p className="text-slate-600 mb-2">{analysisData.company_name}</p>
               <div className="flex items-center gap-4">

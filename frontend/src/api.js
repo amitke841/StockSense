@@ -42,6 +42,22 @@ export async function getGraphData(query) {
   return response.json();
 }
 
+export async function getPopularStocks() {
+  const response = await fetch("https://endpoint--stocksense--ksxg2vxqsywy.code.run/getpopularstocks", {
+    method: 'GET',
+  });
+  if (!response.ok) throw new Error('Server error');
+  return response.json();
+}
+
+export async function getMarketStatus() {
+  const response = await fetch("https://endpoint--stocksense--ksxg2vxqsywy.code.run/getmarketstatus", {
+    method: 'GET',
+  });
+  if (!response.ok) throw new Error('Server error');
+  return response.json();
+}
+
 // export async function predictStock(query) {
 //   const response = await fetch(
 //     "https://endpoint--stocksense--ksxg2vxqsywy.code.run/predict",

@@ -4,10 +4,6 @@ import Dashboard from "./Dashboard";
 
 import Search from "./Search";
 
-import Trending from "./Trending";
-
-import Watchlist from "./Watchlist";
-
 import { BrowserRouter as Router, Route, Routes, useLocation } from 'react-router-dom';
 
 const PAGES = {
@@ -15,10 +11,6 @@ const PAGES = {
     Dashboard: Dashboard,
     
     Search: Search,
-    
-    Trending: Trending,
-    
-    Watchlist: Watchlist,
     
 }
 
@@ -51,10 +43,6 @@ function PagesContent() {
                 
                 <Route path="/Search" element={<Search />} />
                 
-                <Route path="/Trending" element={<Trending />} />
-                
-                <Route path="/Watchlist" element={<Watchlist />} />
-                
             </Routes>
         </Layout>
     );
@@ -62,7 +50,7 @@ function PagesContent() {
 
 export default function Pages() {
     return (
-        <Router>
+        <Router basename="/StockSense">
             <PagesContent />
         </Router>
     );

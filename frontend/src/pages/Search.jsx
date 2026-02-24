@@ -1,7 +1,7 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { InvokeLLM } from "@/api/integrations";
 import { Stock } from "@/api/entities";
-import { Search, TrendingUp, AlertCircle, Loader2, Brain } from "lucide-react";
+import { Search, TrendingUp, AlertCircle, Loader2, Gauge, TrendingUpDown, BadgeInfo  } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -23,36 +23,37 @@ export default function SearchPage() {
   // const [stockData, setStockData] = useState(null);
   // const [graphData, setGraphData] = useState(null);
 
+  const analyzeStock = async (inputSymbol = searchQuery) => {
+    const querySource = typeof inputSymbol === "string" ? inputSymbol : searchQuery;
+    if (!querySource?.trim()) return;
 
-
-  const analyzeStock = async () => {
-    if (!searchQuery.trim()) return;
-    
-    const query = searchQuery.trim().toUpperCase();
+    const query = querySource.trim().toUpperCase();
     setSearchQuery(query);
+
+    // keep URL in sync
+    const url = new URL(window.location.href);
+    url.searchParams.set("symbol", query);
+    window.history.replaceState({}, "", url);
+
     setIsAnalyzing(true);
     setAnalysisResult(null);
     setError(null);
-    // setScoreResult(null);
-    // setStockData(null);
-    // setGraphData(null);
 
     try {
       // Run all API calls sequentially in one try block, STOCK DATA WITH STOCK SEN INSIDE, ONE FILE
-      const score = await analyzeStockApi(searchQuery);
-      // setScoreResult(score);
+      const score = await analyzeStockApi(query);
+      const data = await getDataApi(query);
+      const dataForGraph = await getGraphData(query);
 
-      const data = await getDataApi(searchQuery);
-      // setStockData(data);
+      console.log(score.confidence);
+      console.log(dataForGraph);
+      console.log(score.sentiment);
 
-      const dataForGraph = await getGraphData(searchQuery);
-      // setGraphData(dataForGraph);      
-
-      console.log(score.confidence)
-      console.log(dataForGraph)
-      console.log(score.sentiment)
-
-      const confidence = await calculateConfidence(score.confidence, dataForGraph, score.sentiment);
+      const confidence = await calculateConfidence(
+        score.confidence,
+        dataForGraph,
+        score.sentiment
+      );
 
       const result = {
         symbol: score.stock_symbol.toUpperCase(),
@@ -61,7 +62,7 @@ export default function SearchPage() {
         company_name: data.longName,
         current_price: data.currentPrice,
         open: data.open,
-        last_close : data.lastClose,
+        last_close: data.lastClose,
         high: data.high,
         low: data.low,
         range: data.dayRange,
@@ -83,11 +84,7 @@ export default function SearchPage() {
       };
 
       console.log(result);
-
       setAnalysisResult(result);
-
-      // Optionally save to database here
- 
     } catch (error) {
       console.error("Error during stock analysis:", error); // Log exact error
       setError("Failed to analyze stock. Please try again.");
@@ -96,8 +93,18 @@ export default function SearchPage() {
     setIsAnalyzing(false);
   };
 
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const symbolFromUrl = params.get("symbol") || params.get("q");
+
+    if (symbolFromUrl && symbolFromUrl.trim()) {
+      analyzeStock(symbolFromUrl);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const handleKeyPress = (e) => {
-    if (e.key === 'Enter') {
+    if (e.key === "Enter") {
       analyzeStock();
     }
   };
@@ -113,11 +120,11 @@ export default function SearchPage() {
             </div>
           </div>
           <h1 className="text-4xl font-bold text-slate-800 mb-4">
-            AI Stock Analyzer
+            Analyze smarter, trade wiser
           </h1>
           <p className="text-xl text-slate-600 max-w-2xl mx-auto">
-            Get instant AI-powered analysis of any stock with social sentiment, 
-            technical indicators, and investment recommendations
+            Get real-time sentiment scores, tomorrow’s price predictions, detailed stock insights with interactive 
+            graphs, and latest news—everything you need to make informed decisions.
           </p>
         </div>
 
@@ -135,13 +142,13 @@ export default function SearchPage() {
                     placeholder="e.g., AAPL, Tesla, NVDA..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    onKeyPress={handleKeyPress}
+                    onKeyDown={handleKeyPress}
                     className="pl-10 py-3 text-lg border-slate-300 focus:border-blue-500"
                   />
                 </div>
               </div>
               <Button
-                onClick={analyzeStock}
+                onClick={() => analyzeStock()}
                 disabled={isAnalyzing || !searchQuery.trim()}
                 className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 py-3 px-8 text-lg font-semibold"
               >
@@ -194,35 +201,34 @@ export default function SearchPage() {
         {/* How it works */}
         <Card className="bg-white/60 backdrop-blur-sm shadow-lg border border-white/20 mt-12">
           <CardHeader>
-            <CardTitle className="text-center text-slate-800">How Our AI Analysis Works</CardTitle>
+            <CardTitle className="text-center text-slate-800">How Our Smart Analysis Works</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="grid md:grid-cols-3 gap-6 text-center">
               <div>
                 <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-3">
-                  <Search className="w-6 h-6 text-blue-600" />
+                  <Gauge className="w-6 h-6 text-blue-600" />
                 </div>
-                <h4 className="font-semibold text-slate-800 mb-2">Data Collection</h4>
+                <h4 className="font-semibold text-slate-800 mb-2">Sentiment Insights</h4>
                 <p className="text-slate-600 text-sm">
-                  Gathers real-time data from financial markets, social media, and news sources
-                </p>
+                  Gauge market mood instantly with our sentiment scores, helping you understand how investors feel about each stock.</p>
               </div>
               <div>
                 <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-3">
-                  <Brain className="w-6 h-6 text-purple-600" />
+                  <TrendingUpDown className="w-6 h-6 text-purple-600" />
                 </div>
-                <h4 className="font-semibold text-slate-800 mb-2">AI Analysis</h4>
+                <h4 className="font-semibold text-slate-800 mb-2">Predictive Analytics</h4>
                 <p className="text-slate-600 text-sm">
-                  Advanced algorithms analyze sentiment, technicals, and fundamentals
+                  See tomorrow’s stock value predictions at a glance, so you can plan smarter trades with confidence.
                 </p>
               </div>
               <div>
                 <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-3">
-                  <TrendingUp className="w-6 h-6 text-green-600" />
+                  <BadgeInfo className="w-6 h-6 text-green-600" />
                 </div>
-                <h4 className="font-semibold text-slate-800 mb-2">Recommendation</h4>
+                <h4 className="font-semibold text-slate-800 mb-2">Comprehensive Stock Details</h4>
                 <p className="text-slate-600 text-sm">
-                  Generates a score from -100 to 100 with detailed reasoning
+                  Dive into detailed charts, graphs, and news updates to get the full picture before making decisions.
                 </p>
               </div>
             </div>
