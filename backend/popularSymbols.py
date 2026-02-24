@@ -10,7 +10,7 @@ def update_sentiments():
 
     try:
         for symbol in popular_symbols:
-            sent = get_stock_sentiment(symbol)
+            sent = get_stock_sentiment(symbol)['sentiment']
             price = get_stock_data(symbol)['currentPrice']
             sql = "UPDATE Daily_Sen SET sentiment = %s, price = %s WHERE symbol = %s"
             cursor.execute(sql, (sent, price, symbol))
