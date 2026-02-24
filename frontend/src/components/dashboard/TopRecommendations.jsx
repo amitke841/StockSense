@@ -96,7 +96,7 @@ export default function TopRecommendations({ title }) {
                     variant="ghost"
                     size="icon"
                     onClick={() =>
-                      (window.location.href = `/search?symbol=${encodeURIComponent(stock.symbol)}`)
+                      (window.location.href = `StockSense/search?symbol=${encodeURIComponent(stock.symbol)}`)
                     }
                     className="h-7 w-7 p-0 text-blue-600 hover:text-blue-700 hover:bg-transparent"
                   >
